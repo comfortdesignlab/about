@@ -702,7 +702,9 @@
 
                   <h3>例4 画面サイズによって幅を変える</h3>
                   <p>
-                    基本的なデザインの例です。
+                    基本的なデザインの例です。xs &#x25b6; sm &#x25b6; md &#x25b6; lg &#x25b6; xl のように、
+                    小さい画面から大きい画面の順に考えます。
+
                   </p>
                   <v-row justify="center" class="grey lighten-4">
                     <v-col cols="8" sm="4">
@@ -812,20 +814,22 @@
                   <div class="text-center"><b>図 ブレイクポイントで幅を変える</b></div>
 
                   <p>
-                    スマートフォンでは１カラム、mdのブレイクポイントで2カラム、lgのブレイクポイントで4カラム
+                    スマートフォンでは<v-chip label small color="red lighten-4">1カラム</v-chip>、
+                    mdのブレイクポイントで<v-chip label small color="red lighten-4">2カラム</v-chip>、
+                    lgのブレイクポイントで<v-chip label small color="red lighten-4">4カラム</v-chip>
                     となるように、<code>v-col</code> に指定します。
                     この通りの挙動にするためには、以下の計算となります。
-                  <ul>
-                    <li>スマートフォン表示： 各<code>v-col</code>の幅を <b>12</b> にする。12 のため、 <b>1</b> つで1行が埋まります。</li>
-                    <li>タブレット表示： 各<code>v-col</code>の幅を <b>6</b> にする。6 + 6 = 12 のため、 <b>2</b> つで1行が埋まります。</li>
-                    <li>PC表示： 各<code>v-col</code>の幅を <b>3</b> にする。3 + 3 + 3 + 3 = 12 のため、 <b>4</b> つで1行が埋まります。</li>
-                  </ul>
-
-                  指定の仕方は、ブレイクポイントの指定コードを属性として使用します。
-                  xsがデフォルトのため、xsは <code>cols</code> に指定します。
-                  <code class="d-block"><pre>&lt;v-col cols="12" md="6" lg="3"&gt;</pre></code>
                   </p>
-
+                  <ul>
+                    <li>スマートフォン表示： 各<code>v-col</code>の幅を <b>12</b> にする。12 のため、 <v-chip label small color="red lighten-4"><b>1</b> つ</v-chip>で1行が埋まります。</li>
+                    <li>タブレット表示： 各<code>v-col</code>の幅を <b>6</b> にする。6 + 6 = 12 のため、 <v-chip label small color="red lighten-4"><b>2</b> つ</v-chip>で1行が埋まります。</li>
+                    <li>PC表示： 各<code>v-col</code>の幅を <b>3</b> にする。3 + 3 + 3 + 3 = 12 のため、 <v-chip label small color="red lighten-4"><b>4</b> つ</v-chip>で1行が埋まります。</li>
+                  </ul>
+                  <p>
+                    指定の仕方は、ブレイクポイントの指定コードを属性として使用します。
+                    xsがデフォルトのため、xsは <code>cols</code> に指定します。
+                  </p>
+                  <code class="d-block"><pre>&lt;v-col cols="12" md="6" lg="3"&gt;</pre></code>
                   <div>
                     <v-icon left>mdi-arrow-down</v-icon>実装例
                     <small>上のバーの状態も見比べながら、ブラウザの横幅を変えてみてください。</small>
@@ -906,7 +910,7 @@
               <v-card height="100%">
                 <v-card-title>Card 1</v-card-title>
                 <v-card-text>
-                  xs と sm は 12、md と lg は 6 、xl は 3 。
+                  すべての<code>v-col</code>に<code>cols="12" md="6" lg="3"</code>を適用。
                 </v-card-text>
               </v-card>
             </v-col>
@@ -914,7 +918,11 @@
               <v-card height="100%">
                 <v-card-title>Card 2</v-card-title>
                 <v-card-text>
-                  すべての<code>v-col</code>に<code>cols="12" md="6" xl="3"</code>を適用。
+                  <ul>
+                    <li>xs と sm は 12、つまり 1 カラムで表示される。</li>
+                    <li>md は 6、つまり 2 カラムで表示される。</li>
+                    <li>lg と xl は 3 、つまり 4 カラムで表示される。</li>
+                  </ul>
                 </v-card-text>
               </v-card>
             </v-col>
@@ -929,7 +937,7 @@
                   </div>
                   <b>サンプル</b>
                   <code class="d-block"><pre>
-&lt;v-col cols="12" md="6" xl="3" class="green"&gt;
+&lt;v-col cols="12" md="6" lg="3"&gt;
   &lt;v-card height="100%"&gt;
     &lt;v-card-title&gt;Title Text&lt;/v-card-title&gt;
     &lt;v-card-text&gt;Contents Text&lt;/v-card-text&gt;
