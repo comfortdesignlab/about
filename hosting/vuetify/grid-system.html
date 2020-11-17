@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!-- タブに表示されるタイトルを設定する -->
+  <title>Vuetify Grid System | v-container v-row v-col の関係</title>
+
+  <!-- Vuetifyに必要なファイルを読み込む -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+
+  <!-- モバイル表示時に適切に表示されるように設定する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    /* チラツキ防止 */
+    [v-cloak] {
+      display: none;
+    }
+
+    /* 画面幅が小さいときにコードが横スクロールされるように設定+デザイン修正 */
+    code:not(.d-block) {
+      font-weight: 600;
+      color: #616161;
+      background-color: #E3F2FD !important;
+      font-size: 0.9rem;
+    }
+
+    code.d-block {
+      padding-top: 10px;
+      padding-bottom: 10px;
+      overflow: auto;
+      font-weight: 500;
+      color: white;
+      background-color: rgb(78, 78, 78) !important;
+    }
+  </style>
+</head>
+
+<body style="background-color:#ECEFF1;">
+  <div id="app" v-cloak>
+    <v-app style="background-color:#ECEFF1;">
+      <v-app-bar dark app dense :color="sizeToColor">
+        <v-spacer></v-spacer>
+        <v-toolbar-title>
+          現在幅: {{ width }}px [
+          <span class="d-sm-none">Extra Small</span>
+          <span class="d-none d-sm-inline d-md-none">Small</span>
+          <span class="d-none d-md-inline d-lg-none">Medium</span>
+          <span class="d-none d-lg-inline d-xl-none">Large</span>
+          <span class="d-none d-xl-inline">Extra Large</span>
+          ]
+        </v-toolbar-title>
+        <v-spacer></v-spacer>
+      </v-app-bar>
+
+      <v-main>
+        <v-container fluid>
+          <v-row>
+            <v-col cols="12" md="10" lg="8" xl="7">
+              <v-row>
+                <v-col cols="12" sm="2" xl="1">
+                  <!-- https://cdn.vuetifyjs.com/docs/images/logos/vuetify-logo-light.svg -->
+                  <svg style="max-width:100px;" class="d-block mx-auto" viewBox="0 0 344 393" fill="none"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path d="M171.723 189.485L91.4878 0.00793457H171.723V189.485Z" fill="#1697F6" />
+                    <path d="M89.9495 57.1976H0L171.723 392.158V245.107L89.9495 57.1976Z" fill="#7BC6FF" />
+                    <path d="M171.723 0L171.723 189.485L251.955 0.00795277H171.723" fill="#1867C0" />
+                    <path d="M253.487 57.1976H343.436L171.723 392.158V245.107L253.487 57.1976Z" fill="#AEDDFF" />
+                  </svg>
+                </v-col>
+                <v-col cols="12" sm="10" xl="11">
+                  <h1>Vuetify Grid System</h1>
+                  <h3>&lt;v-container&gt; &lt;v-row&gt; &lt;v-col&gt; の関係</h3>
+                  <small>2020/11/17 作成</small>
+                </v-col>
+              </v-row>
+            </v-col>
+            <v-col cols="12" md="10" lg="8" xl="7">
+              <v-card outlined tile>
+                <v-card-title>概要</v-card-title>
+                <v-divider></v-divider>
+                <v-card-text>
+                  <p>
+                    Vuetify は Grid System を使用して画面をレイアウトします。
+                    使用する主なタグは
+                    <code>&lt;v-container&gt;</code>
+                    <code>&lt;v-row&gt;</code>
+                    <code>&lt;v-col&gt;</code>
+                    です。このレイアウト方法を活用すると、殆どの場面で自在にデザインできるようになります。
+                    Vuetify の Grid System は全く別のJavaScriptフレームワークである
+                    <a href="https://getbootstrap.jp/" target="_blank">Bootstrap</a> の
+                    <a href="https://getbootstrap.com/docs/4.5/layout/grid/" target="_blank">Grid System</a>
+                    から影響を受けています。
+                    考え方が良く似ているため、Bootstrapを使用する際にも適用できます。
+                    大きな特徴は画面横幅を 12分割してレイアウトする方法を用いる点です。
+                    画面横幅を 12等分し、その幅のうちどのくらいの割合を使用するかを設定します。
+                    このページでは、この方法について基本的な部分を説明しています。
+                    より詳細な仕様については、<a href="https://vuetifyjs.com/en/" target="_blank">Vuetify.js</a> の公式ドキュメント
+                    <a href="https://vuetifyjs.com/en/components/grids/" target="_blank">Grid System</a> を参照してください。
+                  </p>
+                  <p class="my-0">
+                    このページも Vuetify の Grid System を活用して記述しています。
+                    また、ライブラリはCDNを使用しており、ページは単一ファイルで構成されているため、
+                    このページを右クリックしソースコードを表示後、
+                    全選択・コピーして手元のコンピュータでxxx.htmlファイルを作成し貼り付けるだけで、ブラウザに表示できます。
+                    ソースコードをお気に入りのエディタで表示して、ブラウザでの見え方を確認しながら改変等して学習にご活用ください。
+                  </p>
+                </v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
+
+          <v-row>
+            <v-col cols="12" md="10" lg="8" xl="7">
+              <v-card outlined tile>
+                <v-card-title>Grid System</v-card-title>
+                <v-card-subtitle>「v-container &#x25b6; v-row &#x25b6; v-col」と12等分の概念</v-card-subtitle>
+                <v-divider></v-divider>
+                <v-card-text>
+                  <ul>
+                    <li><code>v-container</code>は、全体を覆うタグです。</li>
+                    <li><code>v-row</code>は、行です。</li>
+                    <li><code>v-col</code>は、列です。</li>
+                  </ul>
+                  <code>v-col</code>の中には、テキストやHTMLのタグが入ります。
+                  <code>v-col</code>が複数(または 1つ)記述されたものを、<code>v-row</code>で囲みます。
+                  <code>v-row</code>が複数(または 1つ)記述されたものを、<code>v-container</code>で囲みます。
+                  以下のようになります。</p>
+                  <b>v-container &#x25b6; v-row &#x25b6; v-col のコードサンプル</b>
+                  <code class="d-block"><pre>
+&lt;v-container fluid&gt;
+  &lt;v-row&gt;
+    &lt;v-col cols="6"&gt;A1&lt;/v-col&gt;
+    &lt;v-col cols="6"&gt;A2&lt;/v-col&gt;
+  &lt;/v-row&gt;
+  &lt;v-row&gt;
+    &lt;v-col cols="4"&gt;B1&lt;/v-col&gt;
+    &lt;v-col cols="4"&gt;B2&lt;/v-col&gt;
+    &lt;v-col cols="4"&gt;B3&lt;/v-col&gt;
+  &lt;/v-row&gt;
+&lt;/v-container&gt;</pre></code>
+                  <p class="mt-2">
+                    ※<code>v-container</code>にある属性、<code>fluid</code>は画面いっぱいに表示する設定です。
+                    このページでは、わかりやすさのため<code>fluid</code>をつけています。
+                    詳しくはこのページの最下部にある
+                    <a href="#note1" v-smooth-scroll="{ offset: -60 }">補足: v-container のfluid属性の有無による違い</a>
+                    を参照してください。
+                  </p>
+
+                  <v-row justify="center" no-gutters>
+                    <v-col cols="12" md="9">
+                      <v-card outlined tile color="blue lighten-5">
+                        <v-card-text class="pt-0">
+                          <v-row>
+                            <v-col cols="12"><b>v-container</b></v-col>
+                            <v-col cols="12">
+                              <v-card outlined tile color="teal lighten-4">
+                                <v-card-text class="pt-0">
+                                  <v-row>
+                                    <v-col cols="12"><b>v-row</b></v-col>
+                                    <v-col cols="6">
+                                      <v-card outlined tile>
+                                        <v-card-text><b>v-col</b><br>A1</v-card-text>
+                                      </v-card>
+                                    </v-col>
+                                    <v-col cols="6">
+                                      <v-card outlined tile>
+                                        <v-card-text><b>v-col</b><br>A2</v-card-text>
+                                      </v-card>
+                                    </v-col>
+                                  </v-row>
+                                </v-card-text>
+                              </v-card>
+                            </v-col>
+                            <v-col cols="12">
+                              <v-card outlined tile color="teal lighten-4">
+                                <v-card-text class="pt-0">
+                                  <v-row>
+                                    <v-col cols="12"><b>v-row</b></v-col>
+                                    <v-col cols="4">
+                                      <v-card outlined tile>
+                                        <v-card-text><b>v-col</b><br>B1</v-card-text>
+                                      </v-card>
+                                    </v-col>
+                                    <v-col cols="4">
+                                      <v-card outlined tile>
+                                        <v-card-text><b>v-col</b><br>B2</v-card-text>
+                                      </v-card>
+                                    </v-col>
+                                    <v-col cols="4">
+                                      <v-card outlined tile>
+                                        <v-card-text><b>v-col</b><br>B3</v-card-text>
+                                      </v-card>
+                                    </v-col>
+                                  </v-row>
+                                </v-card-text>
+                              </v-card>
+                            </v-col>
+                          </v-row>
+                        </v-card-text>
+                      </v-card>
+                    </v-col>
+                    <v-col cols="12" md="9" class="text-center">
+                      <b>図: タグの関係を構造化したイメージ</b>
+                    </v-col>
+                  </v-row>
+
+                  <p>
+                    <code>v-row</code>と<code>v-col</code>の入れ子関係が逆になることはありません。
+                    <code>v-row</code>の中に<code>v-col</code>を入れる関係を保ったままレイアウトします。
+
+                    <code>v-row</code>、<code>v-col</code>は、ネストする(入れ子にする)ことができます。
+                    つまり、<code>v-row</code>の中に<code>v-col</code>をいれ、その<code>v-col</code>のなかに
+                    <code>v-row</code>を入れることができます。そして<code>v-col</code>を入れます。
+
+                    その際、外側の<code>v-col</code>の中に、<code>v-container</code>の記述は基本的に不要です。
+                    <code>v-container</code>は、<code>v-row</code>の外側に(直接の親要素でなくとも)1つあれば必要十分です。
+                  </p>
+
+                  <v-row justify="center" no-gutters>
+                    <v-col cols="12" md="9">
+                      <v-card outlined tile color="blue lighten-5">
+                        <v-card-text class="pt-0">
+                          <v-row>
+                            <v-col cols="12"><b>v-container</b></v-col>
+                            <v-col cols="12">
+                              <v-card outlined tile color="teal lighten-4">
+                                <v-card-text class="pt-0">
+                                  <v-row>
+                                    <v-col cols="12"><b>v-row</b></v-col>
+                                    <v-col cols="9">
+                                      <v-card outlined tile height="100%">
+                                        <v-card-text>
+                                          <v-row>
+                                            <v-col cols="12"><b>v-col</b></v-col>
+                                            <v-col cols="12">
+                                              <v-card outlined tile color="teal lighten-4">
+                                                <v-card-text class="pt-0">
+                                                  <v-row>
+                                                    <v-col cols="12"><b>v-row</b></v-col>
+                                                    <v-col cols="12">
+                                                      <v-card outlined tile>
+                                                        <v-card-text><b>v-col</b></v-card-text>
+                                                      </v-card>
+                                                    </v-col>
+                                                  </v-row>
+                                                </v-card-text>
+                                              </v-card>
+                                            </v-col>
+                                            <v-col cols="12">
+                                              <v-card outlined tile color="teal lighten-4">
+                                                <v-card-text class="pt-0">
+                                                  <v-row>
+                                                    <v-col cols="12"><b>v-row</b></v-col>
+                                                    <v-col cols="4">
+                                                      <v-card outlined tile>
+                                                        <v-card-text><b>v-col</b></v-card-text>
+                                                      </v-card>
+                                                    </v-col>
+                                                    <v-col cols="4">
+                                                      <v-card outlined tile>
+                                                        <v-card-text><b>v-col</b></v-card-text>
+                                                      </v-card>
+                                                    </v-col>
+                                                    <v-col cols="4">
+                                                      <v-card outlined tile>
+                                                        <v-card-text><b>v-col</b></v-card-text>
+                                                      </v-card>
+                                                    </v-col>
+                                                  </v-row>
+                                                </v-card-text>
+                                              </v-card>
+                                            </v-col>
+                                          </v-row>
+                                        </v-card-text>
+                                      </v-card>
+                                    </v-col>
+                                    <v-col cols="3">
+                                      <v-card outlined tile height="100%">
+                                        <v-card-text>
+                                          <v-row>
+                                            <v-col cols="12"><b>v-col</b></v-col>
+                                          </v-row>
+                                        </v-card-text>
+                                      </v-card>
+                                    </v-col>
+                                  </v-row>
+                                </v-card-text>
+                              </v-card>
+                            </v-col>
+                          </v-row>
+                        </v-card-text>
+                      </v-card>
+                    </v-col>
+                    <v-col cols="12" md="9" class="text-center">
+                      <b>図: ネストのイメージ</b>
+                      (ページ全体を2カラムに分けたい場合)
+                    </v-col>
+                  </v-row>
+
+                  <p>
+                    レイアウトを構成する際に必要となるのが横幅に対して12等分する考え方です。
+                    12が使用されている理由は約数(1,2,3,4,6,12)が多く都合が良いからです。
+                    この12のうち、要素にどのくらいの割合を適用するかを決めることで画面を構成します。
+                    設定は <code>v-col</code>に指定します。
+                  </p>
+
+                  <h3>例1 １行に12列分の幅が入ることを確認する</h3>
+                  <code>v-row</code>の中に<code>&lt;v-col cols="1"&gt;数字&lt;/v-col&gt;</code>を 14個入れます。<br>
+                  <p>
+                    見やすくするために、<code>v-col</code>の背景に
+                    <a href="https://vuetifyjs.com/en/styles/colors/#material-colors" target="_blank">色</a> をつけています。<br>
+                    幅が 1 の要素が 14個あるため 1 × 12 = 12で 12個目までは 1行で表示されます。
+                    13個目の要素から、12個を超えるため次の行に表示されます。
+                    14個目は13個目の続きに表示されます。
+                    これにより、12等分に分割されていることがわかります。
+                  </p>
+                  <div>
+                    <v-icon left>mdi-arrow-down</v-icon>実装例
+                  </div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
+          <v-row style="border:1px dashed rgba(0,0,0,0.2);">
+            <v-col v-for="(item,index) in Array(14)" :key="'col1-'+index" :cols="1" class="grey"
+              :class="index%2?'lighten-1':'darken-1'">{{ index+1 }}</v-col>
+          </v-row>
+          <v-row>
+            <v-col cols="12" md="10" lg="8" xl="7">
+              <v-card outlined tile>
+                <v-card-text>
+                  <b>例1のコードサンプル</b>
+                  <code class="d-block">
+                    <pre>
+&lt;v-container fluid&gt;
+  &lt;v-row&gt;
+    &lt;v-col cols="1" class="blue"&gt;1&lt;/v-col&gt;
+    &lt;v-col cols="1" class="pink"&gt;2&lt;/v-col&gt;
+    &lt;v-col cols="1" class="blue"&gt;3&lt;/v-col&gt;
+    &lt;v-col cols="1" class="pink"&gt;4&lt;/v-col&gt;
+    &lt;v-col cols="1" class="blue"&gt;5&lt;/v-col&gt;
+    &lt;v-col cols="1" class="pink"&gt;...&lt;/v-col&gt;
+  &lt;/v-row&gt;
+&lt;/v-container&gt;</pre>
+                  </code>
+                </v-card-text>
+                <v-card-text>
+                  <h3>例2 <code>v-row</code>で区切ると強制的に次の行になる</h3>
+                  <code>v-row</code>の中に<code>&lt;v-col cols="1"&gt;数字&lt;/v-col&gt;</code>を1個入れたものを2つ記述した場合<br>
+                  <p>
+                    col幅が 1 の要素が 1個のため、1行には残り11幅分の要素を入れることができますが、
+                    <code>v-row</code> で次の行を指定しているため <b>B</b> は次の行に表示されます。
+                  </p>
+                  <div>
+                    <v-icon left>mdi-arrow-down</v-icon>実装例
+                  </div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
+
+          <v-row style="border:1px dashed rgba(0,0,0,0.2);">
+            <v-col cols="1" class="blue">A</v-col>
+          </v-row>
+          <v-row style="border:1px dashed rgba(0,0,0,0.2);">
+            <v-col cols="1" class="pink">B</v-col>
+          </v-row>
+
+          <v-row>
+            <v-col cols="12" md="10" lg="8" xl="7">
+              <v-card outlined tile>
+                <v-card-text>
+                  <b>例2のコードサンプル</b>
+                  <code class="d-block">
+                    <pre>
+&lt;v-container fluid&gt;
+  &lt;v-row&gt;
+    &lt;v-col cols="1" class="blue"&gt;A&lt;/v-col&gt;
+  &lt;/v-row&gt;
+  &lt;v-row&gt;
+    &lt;v-col cols="1" class="pink"&gt;B&lt;/v-col&gt;
+  &lt;/v-row&gt;
+&lt;/v-container&gt;</pre>
+                  </code>
+                </v-card-text>
+                <v-card-text>
+                  <h3>例3 <code>v-col</code>の<code>cols</code>を変える</h3>
+                  <code>v-row</code>の中に<code>v-col</code>を入れ、colsを1つずつ大きくします。
+                  <code>v-col</code>の中の数字は幅です。
+                  <code>v-row</code>は１つしかありませんが、col幅が 12を超えているため、複数行に渡って表示されています。
+
+                  <b>ポイント</b>
+                  <ul>
+                    <li>
+                      1行目は、幅 1 + 2 + 3 + 4 = 10 で12以下のため 1行で表示されます。5 は 10 + 5 = 15 > 12 のため次の行に表示されます。
+                    </li>
+                    <li>
+                      2行目は、幅 5 + 6 = 11 で12以下のため 1行で表示されます。7 は 11 + 7 = 18 > 12 のため次の行に表示されます。
+                    </li>
+                    <li>
+                      3行目以降の行は、2つの要素を合わせると12を超えるため 1要素ずつ表示されます。
+                    </li>
+                  </ul>
+
+                  <div>
+                    <v-icon left>mdi-arrow-down</v-icon>実装例
+                  </div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
+
+          <v-row style="border:1px dashed rgba(0,0,0,0.2);">
+            <v-col cols="1" class="red">1</v-col>
+            <v-col cols="2" class="pink">2</v-col>
+            <v-col cols="3" class="purple">3</v-col>
+            <v-col cols="4" class="deep-purple">4</v-col>
+            <v-col cols="5" class="indigo">5</v-col>
+            <v-col cols="6" class="blue">6</v-col>
+            <v-col cols="7" class="light-blue">7</v-col>
+            <v-col cols="8" class="cyan">8</v-col>
+            <v-col cols="9" class="teal">9</v-col>
+            <v-col cols="10" class="green">10</v-col>
+            <v-col cols="11" class="light-green">11</v-col>
+            <v-col cols="12" class="lime">12</v-col>
+          </v-row>
+
+          <v-row>
+            <v-col cols="12" md="10" lg="8" xl="7">
+              <v-card outlined tile>
+                <v-card-text>
+                  <b>例3のコードサンプル</b>
+                  <code class="d-block">
+                    <pre>
+&lt;v-container fluid&gt;
+  &lt;v-row&gt;
+    &lt;v-col cols="1" class="red"&gt;1&lt;/v-col&gt;
+    &lt;v-col cols="2" class="pink"&gt;2&lt;/v-col&gt;
+    &lt;v-col cols="3" class="purple"&gt;3&lt;/v-col&gt;
+    &lt;v-col cols="4" class="deep-purple"&gt;4&lt;/v-col&gt;
+    &lt;v-col cols="5" class="indigo"&gt;5&lt;/v-col&gt;
+    &lt;v-col cols="6" class="blue"&gt;6&lt;/v-col&gt;
+    &lt;v-col cols="7" class="light-blue"&gt;7&lt;/v-col&gt;
+    &lt;v-col cols="8" class="cyan"&gt;8&lt;/v-col&gt;
+    &lt;v-col cols="9" class="teal"&gt;9&lt;/v-col&gt;
+    &lt;v-col cols="10" class="green"&gt;10&lt;/v-col&gt;
+    &lt;v-col cols="11" class="light-green"&gt;11&lt;/v-col&gt;
+    &lt;v-col cols="12" class="lime"&gt;12&lt;/v-col&gt;
+  &lt;/v-row&gt;
+&lt;/v-container&gt;</pre>
+                  </code>
+                </v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
+
+
+          <v-row>
+            <v-col cols="12" md="10" lg="8" xl="7">
+              <v-card outlined tile>
+                <v-card-title>ブレイクポイント</v-card-title>
+                <v-card-subtitle>レスポンシブデザイン、モバイルフレンドリーなデザインを簡単に構築する</v-card-subtitle>
+                <v-divider></v-divider>
+                <v-card-text>
+                  <p>
+                    Vuetifyには、柔軟なデザインを構築するために、4つのブレイクポイント(5つの状態)があります。
+                    ブレイクポイントは一般的なデバイスの画面横幅に対して決められています。
+                    ブレイクポイント別にそれぞれ xs、sm、md、lg、xl という状態の名前がついています。
+                    このページも表示しているブラウザ画面の大きさによって、レイアウトが変わります。
+                    現在の画面の横幅(px)と状態は上のバーに表示しています。
+                    画面サイズを変えて確認してみてください。詳しいブレイクポイントに関する内容は以下の通りです。
+                  </p>
+                  <div class="text-center">
+                    表 画面横幅のブレイクポイント
+                  </div>
+                  <div style="overflow: auto;">
+                    <v-simple-table style="min-width:600px;">
+                      <template v-slot:default>
+                        <thead>
+                          <tr>
+                            <th>種類</th>
+                            <th>想定されるデバイス例</th>
+                            <th>指定時のコード</th>
+                            <th>範囲</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr v-for="item in breakpointList" :key="item.icon">
+                            <td>{{ item.type }}</td>
+                            <td>
+                              <v-icon left>{{ item.icon }}</v-icon>
+                              {{ item.device }}
+                            </td>
+                            <td>{{ item.code }}</td>
+                            <td>{{ item.range }}</td>
+                          </tr>
+                        </tbody>
+                      </template>
+                    </v-simple-table>
+                  </div>
+
+                  <p>
+                    Vuetifyドキュメントを参考に一部修正。
+                    オリジナルは
+                    <a href="https://vuetifyjs.com/en/features/breakpoints/#display-breakpoints" target="_blank">
+                      Display Breakpoints
+                    </a>
+                    を参照。
+                  </p>
+
+                  <h3>レスポンシブデザイン</h3>
+                  <p>
+                    画面の横幅に応じて表示のデザインを変更し、画面サイズの異なるディスプレイで表示しても、
+                    常に適切な文字の大きさで表示することをレスポンシブデザインと言います。
+                    また、スマートフォンで表示した際に適切な文字やボタンの大きさで表示されることを、
+                    モバイルフレンドーリーなデザインと言います。
+                  </p>
+                  <p>
+                    インターネットでページを表示する際に、ユーザーエージェントがサーバーに渡されます。
+                    このユーザーエージェントには、どんなデバイスを使っているかを識別することができます。
+                    この仕組みを利用して、スマートフォン用、PC用に専用にレイアウトしたHTMLファイルを作成し
+                    レスポンスする方法があります。これはモバイルフレンドリーなデザインを提供できますが、
+                    レスポンシブデザインではないと言えます。
+                    レスポンシブデザインは、一つのファイルで画面の横幅が異なっても適切にレイアウトされます。
+                    そのため一度ページを表示したあとでも、ブラウザの横幅を変えると、自動的にレイアウトが組み変わります。
+                  </p>
+                  <p>
+                    レスポンシブデザインを構築するのは、スタイルシート(CSS)の知識が必要です。
+                    しかし、Vuetifyはブレイクポイントを使用することで、スタイルシートの書き方を知らなくても、
+                    簡単かつ確実にレスポンシブデザインができるように設計されています。
+                  </p>
+
+                  <h3>レスポンシブデザインの最初の設定</h3>
+                  <p>
+                    デフォルトでは、スマートフォンで表示しても小さく表示されてしまいます。
+                    これは、スマートフォンのブラウザに仮想的なスクリーンサイズがあるためです。
+                    実際の画面サイズを適用する(厳密には調整された適切な値)ための設定が、ビューポートの設定です。
+                    レスポンシブデザインにするためには、<code>head</code>タグ内に以下を追加してください。
+                  </p>
+                  <b><code>head</code>タグ内にビューポートを設定するための<code>meta</code>タグを記述する</b>
+                  <code class="d-block">
+                    <pre>
+&lt;head&gt;
+  ...
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
+  ...
+&lt;/head&gt;</pre>
+                  </code>
+                </v-card-text>
+                <v-card-text>
+                  <h3>レスポンシブデザインレイアウトの例</h3>
+                  <p>
+                    Vuetifyでは、まずスマートフォンのレイアウトから考えます。
+                    PCを使って、大きな画面で開発を始めることが多いため、
+                    多くの人は、まずPC画面でのレイアウトを考えますが、
+                    PC画面を設計後に、スマートフォンレイアウトを考えるのは
+                    少し難しいです。モバイルデザインファーストで考えましょう。
+
+                    ただし、モバイルデザインは思いのほか画面の幅が小さく、
+                    複雑なレイアウトはできません。
+                    基本的には、1カラムのレイアウトにすることが多いです。
+                  </p>
+                  <v-row justify="center" class="grey lighten-4">
+                    <v-col cols="12" sm="4">
+                      <v-container>
+                        <v-row class="teal lighten-4" style="height:100px;">
+                          <v-col cols="12">
+                            <v-card height="100%" tile></v-card>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col>
+                            <div class="text-center"><b>1カラムレイアウト</b></div>
+                          </v-col>
+                        </v-row>
+                      </v-container>
+                    </v-col>
+                    <v-col cols="12" sm="4">
+                      <v-container>
+                        <v-row class="teal lighten-4" style="height:100px;">
+                          <v-col cols="6">
+                            <v-card height="100%" tile></v-card>
+                          </v-col>
+                          <v-col cols="6">
+                            <v-card height="100%" tile></v-card>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col>
+                            <div class="text-center"><b>2カラムレイアウト</b></div>
+                          </v-col>
+                        </v-row>
+                      </v-container>
+                    </v-col>
+                    <v-col cols="12" sm="4">
+                      <v-container>
+                        <v-row class="teal lighten-4" style="height:100px;">
+                          <v-col cols="4">
+                            <v-card height="100%" tile></v-card>
+                          </v-col>
+                          <v-col cols="4">
+                            <v-card height="100%" tile></v-card>
+                          </v-col>
+                          <v-col cols="4">
+                            <v-card height="100%" tile></v-card>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col>
+                            <div class="text-center"><b>3カラムレイアウト</b></div>
+                          </v-col>
+                        </v-row>
+                      </v-container>
+                  </v-row>
+                  <div class="text-center"><b>図 カラムの例</b></div>
+                  <p>
+                    スマートフォン版のレイアウトを決めたら、そこから徐々に大きな画面を考え、
+                    ページのコンテンツに応じてレイアウトを変更していきます。
+                    この時、コンテンツの順番を意識してください。
+                    おそらくスマートフォンレイアウトで構成したものを上から順番にHTMLに記述していくでしょう。
+                    つまり、PC版で表示する際には、スマートフォンレイアウトから派生した形で作る必要があります。
+                    慣れるまでは、PCレイアウトはあまり複雑でない構成にしましょう。
+                  </p>
+                  <v-alert outlined dense type="grey darken-1" icon="mdi-school">
+                    <small>
+                      実は複雑でない構成というものを初学者に伝えるのは少し難しいです。
+                      例えば、下図のレイアウトは比較的簡単な構成です。直感的にHTMLを書くことができます。
+                      しかし、下図のスマートフォンレイアウトからPCレイアウトで「メニューと広告を右側に配置するレイアウト」は難しいです。
+                      また、PCレイアウトの構成のままに
+                      スマートフォンレイアウトの「広告と内容を入れ替える」のも難しいです。
+                      いくつかの方法がありますが、<code>order</code>を使用する方法があります。
+                      このページでは、Grid Systemの基本的な説明のため、<code>order</code>の説明はしていません。
+                      詳しくはスタイルシートの Flexbox に関する内容を学習し、Vuetifyの
+                      <a href="https://vuetifyjs.com/en/styles/flex/#flex-order">Flex Order</a>
+                      を参照してください。
+                    </small>
+                  </v-alert>
+
+                  <v-row justify="center" class="grey lighten-4">
+                    <v-col cols="8" sm="3">
+                      <v-container>
+                        <v-row class="teal lighten-4" style="height:100px;">
+                          <v-col cols="12">
+                            <v-card height="100%" tile>メニュー</v-card>
+                          </v-col>
+                        </v-row>
+                        <v-row class="teal lighten-4" style="height:100px;">
+                          <v-col cols="12">
+                            <v-card height="100%" tile>広告</v-card>
+                          </v-col>
+                        </v-row>
+                        <v-row class="teal lighten-4" style="height:100px;">
+                          <v-col cols="12">
+                            <v-card height="100%" tile>内容</v-card>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col>
+                            <div class="text-center"><b>スマートフォン</b></div>
+                          </v-col>
+                        </v-row>
+                      </v-container>
+                    </v-col>
+                    <v-col cols="12" sm="1">
+                      <v-row no-gutters align-content="center" style="height:100%;">
+                        <v-col class="text-center">
+                          <div class="d-none d-sm-block">
+                            <v-icon>mdi-arrow-right-bold</v-icon>
+                          </div>
+                          <div class="d-block d-sm-none">
+                            <v-icon>mdi-arrow-down-bold</v-icon>
+                          </div>
+                        </v-col>
+                      </v-row>
+                    </v-col>
+                    <v-col cols="12" sm="7">
+                      <v-container>
+                        <v-row class="teal lighten-4" style="height:300px;">
+                          <v-col cols="3">
+                            <v-card height="40%" class="mb-5" tile>メニュー</v-card>
+                            <v-card height="30%" tile>広告</v-card>
+                          </v-col>
+                          <v-col cols="9">
+                            <v-card height="100%" tile>内容</v-card>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col>
+                            <div class="text-center"><b>PC</b></div>
+                          </v-col>
+                        </v-row>
+                      </v-container>
+                    </v-col>
+                  </v-row>
+                  <div class="text-center"><b>図 スマートフォン版とPC版のレイアウト</b></div>
+
+                  <h3>例4 画面サイズによって幅を変える</h3>
+                  <p>
+                    基本的なデザインの例です。
+                  </p>
+                  <v-row justify="center" class="grey lighten-4">
+                    <v-col cols="8" sm="4">
+                      <v-container>
+                        <v-row class="teal lighten-4" style="height:200px;">
+                          <v-col cols="12">
+                            <v-card height="100%" tile class="blue white--text text-center">A cols="12"</v-card>
+                          </v-col>
+                          <v-col cols="12">
+                            <v-card height="100%" tile class="pink white--text text-center">B cols="12"</v-card>
+                          </v-col>
+                          <v-col cols="12">
+                            <v-card height="100%" tile class="green white--text text-center">C cols="12"</v-card>
+                          </v-col>
+                          <v-col cols="12">
+                            <v-card height="100%" tile class="yellow text-center">D cols="12"</v-card>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col>
+                            <div class="text-center"><b>スマートフォン</b></div>
+                          </v-col>
+                        </v-row>
+                      </v-container>
+                    </v-col>
+                    <v-col cols="12" sm="1">
+                      <v-row no-gutters align-content="center" style="height:100%;">
+                        <v-col class="text-center">
+                          <b>md</b>
+                          <div class="d-none d-sm-block" style="width:100px;transform:rotate(-90deg);">
+                            <small>ブレイクポイント</small>
+                          </div>
+                          <div class="d-block d-sm-none"><small>ブレイクポイント</small></div>
+                          <div class="d-none d-sm-block">
+                            <v-icon>mdi-arrow-right-bold</v-icon>
+                          </div>
+                          <div class="d-block d-sm-none">
+                            <v-icon>mdi-arrow-down-bold</v-icon>
+                          </div>
+                        </v-col>
+                      </v-row>
+                    </v-col>
+                    <v-col cols="12" sm="7">
+                      <v-container>
+                        <v-row class="teal lighten-4" style="height:200px;">
+                          <v-col cols="6">
+                            <v-card height="100%" tile class="blue white--text text-center pt-3">A<br>md="6"</v-card>
+                          </v-col>
+                          <v-col cols="6">
+                            <v-card height="100%" tile class="pink white--text text-center pt-3">B<br>md="6"</v-card>
+                          </v-col>
+                          <v-col cols="6">
+                            <v-card height="100%" tile class="green white--text text-center pt-3">C<br>md="6"</v-card>
+                          </v-col>
+                          <v-col cols="6">
+                            <v-card height="100%" tile class="yellow text-center pt-3">D<br>md="6"</v-card>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col>
+                            <div class="text-center"><b>タブレット</b></div>
+                          </v-col>
+                        </v-row>
+                      </v-container>
+                    </v-col>
+                    <v-col cols="12" sm="1">
+                      <v-row no-gutters align-content="center" style="height:100%;">
+                        <v-col class="text-center">
+                          <b>lg</b>
+                          <div class="d-none d-sm-block" style="width:100px;transform:rotate(-90deg);">
+                            <small>ブレイクポイント</small>
+                          </div>
+                          <div class="d-block d-sm-none"><small>ブレイクポイント</small></div>
+                          <div class="d-none d-sm-block">
+                            <v-icon>mdi-arrow-right-bold</v-icon>
+                          </div>
+                          <div class="d-block d-sm-none">
+                            <v-icon>mdi-arrow-down-bold</v-icon>
+                          </div>
+                        </v-col>
+                      </v-row>
+                    </v-col>
+                    <v-col cols="12" sm="7">
+                      <v-container>
+                        <v-row class="teal lighten-4" style="height:100px;">
+                          <v-col cols="3">
+                            <v-card height="100%" tile class="blue white--text text-center pt-3">A<br>lg="3"</v-card>
+                          </v-col>
+                          <v-col cols="3">
+                            <v-card height="100%" tile class="pink white--text text-center pt-3">B<br>lg="3"</v-card>
+                          </v-col>
+                          <v-col cols="3">
+                            <v-card height="100%" tile class="green white--text text-center pt-3">C<br>lg="3"</v-card>
+                          </v-col>
+                          <v-col cols="3">
+                            <v-card height="100%" tile class="yellow text-center pt-3">D<br>lg="3"</v-card>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col>
+                            <div class="text-center"><b>PC</b></div>
+                          </v-col>
+                        </v-row>
+                      </v-container>
+                    </v-col>
+                  </v-row>
+                  <div class="text-center"><b>図 ブレイクポイントで幅を変える</b></div>
+
+                  <p>
+                    スマートフォンでは１カラム、mdのブレイクポイントで2カラム、lgのブレイクポイントで4カラム
+                    となるように、<code>v-col</code> に指定します。
+                    この通りの挙動にするためには、以下の計算となります。
+                  <ul>
+                    <li>スマートフォン表示： 各<code>v-col</code>の幅を <b>12</b> にする。12 のため、 <b>1</b> つで1行が埋まります。</li>
+                    <li>タブレット表示： 各<code>v-col</code>の幅を <b>6</b> にする。6 + 6 = 12 のため、 <b>2</b> つで1行が埋まります。</li>
+                    <li>PC表示： 各<code>v-col</code>の幅を <b>3</b> にする。3 + 3 + 3 + 3 = 12 のため、 <b>4</b> つで1行が埋まります。</li>
+                  </ul>
+
+                  指定の仕方は、ブレイクポイントの指定コードを属性として使用します。
+                  xsがデフォルトのため、xsは <code>cols</code> に指定します。
+                  <code class="d-block"><pre>&lt;v-col cols="12" md="6" lg="3"&gt;</pre></code>
+                  </p>
+
+                  <div>
+                    <v-icon left>mdi-arrow-down</v-icon>実装例
+                    <small>上のバーの状態も見比べながら、ブラウザの横幅を変えてみてください。</small>
+                  </div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
+
+
+          <v-row>
+            <v-col cols="12" md="6" lg="3" class="blue">A</v-col>
+            <v-col cols="12" md="6" lg="3" class="pink">B</v-col>
+            <v-col cols="12" md="6" lg="3" class="green">C</v-col>
+            <v-col cols="12" md="6" lg="3" class="yellow">D</v-col>
+          </v-row>
+
+          <v-row>
+            <v-col cols="12" md="10" lg="8" xl="7">
+              <v-card outlined tile>
+                <v-card-text>
+
+                  <b>例4のコードサンプル</b>
+                  <code class="d-block">
+                    <pre>
+&lt;v-container fluid&gt;
+  &lt;v-row&gt;
+    &lt;v-col cols="12" md="6" lg="3" class="blue"&gt;A&lt;/v-col&gt;
+    &lt;v-col cols="12" md="6" lg="3" class="pink"&gt;B&lt;/v-col&gt;
+    &lt;v-col cols="12" md="6" lg="3" class="green"&gt;C&lt;/v-col&gt;
+    &lt;v-col cols="12" md="6" lg="3" class="yellow"&gt;D&lt;/v-col&gt;
+  &lt;/v-row&gt;
+&lt;/v-container&gt;</pre></code>
+
+                  <!-- <v-row class="text-center">
+                    <v-col cols="12" class="pink white--text d-sm-none rounded">
+                      xs: Extra Small <small>(0px ~ 600px)</small>
+                    </v-col>
+                    <v-col cols="12" class="indigo white--text d-none d-sm-block d-md-none rounded">
+                      sm: Small <small>(600px ~ 960px)</small>
+                    </v-col>
+                    <v-col cols="12" class="teal white--text d-none d-md-block d-lg-none rounded">
+                      md: Medium <small>(960px ~ 1264px)</small>
+                    </v-col>
+                    <v-col cols="12" class="orange white--text d-none d-lg-block d-xl-none rounded">
+                      lg: Large <small>(1264px ~ 1904px)</small>
+                    </v-col>
+                    <v-col cols="12" class="brown white--text d-none d-xl-block rounded">
+                      xl: Extra Large <small>(1904px ~)</small>
+                    </v-col>
+                  </v-row> -->
+                </v-card-text>
+                <v-card-text>
+                  <h3>例5 カードを追加する</h3>
+                  <p>
+                    <code>v-col</code>の中に<code>v-card</code>を追加すると、カードデザインができます。
+                    サンプルコードと見た目を見比べて、タグの使い方を把握しましょう。
+                    なお<code>v-</code>から始まるタグは、HTMLの標準にあるタグではありません。
+                    Vuetifyが用意したタグです。Vuetifyの公式ドキュメントを見てサンプルコードを動かして見ましょう。
+                    <code>v-card</code>のドキュメントは
+                    <a href="https://vuetifyjs.com/en/components/cards/" target="_blank">Components/Card</a>
+                    から確認できます。
+                    サンプル画面の右上にある <v-icon>mdi-code-tags</v-icon> のアイコンを押すと、そのプログラムを見ることができます。
+                  </p>
+                  <div>
+                    <v-icon left>mdi-arrow-down</v-icon>実装例
+                    <small>上のバーの状態も見比べながら、ブラウザの横幅を変えてみてください。</small>
+                  </div>
+                </v-card-text>
+
+              </v-card>
+            </v-col>
+          </v-row>
+
+
+          <v-row style="border:1px dashed rgba(0,0,0,0.2);">
+            <v-col cols="12" md="6" lg="3" class="grey">
+              <v-card height="100%">
+                <v-card-title>Card 1</v-card-title>
+                <v-card-text>
+                  xs と sm は 12、md と lg は 6 、xl は 3 。
+                </v-card-text>
+              </v-card>
+            </v-col>
+            <v-col cols="12" md="6" lg="3">
+              <v-card height="100%">
+                <v-card-title>Card 2</v-card-title>
+                <v-card-text>
+                  すべての<code>v-col</code>に<code>cols="12" md="6" xl="3"</code>を適用。
+                </v-card-text>
+              </v-card>
+            </v-col>
+            <v-col cols="12" md="6" lg="3">
+              <v-card height="100%">
+                <v-card-title>Card 3</v-card-title>
+                <v-card-text>
+                  <div>
+                    中に<code>v-card</code>と<code>v-card-text</code>を入れると、
+                    カードデザインができます。<code>v-col</code>で指定したcol幅に
+                    横幅を任せるのが、うまくデザインするコツです。
+                  </div>
+                  <b>サンプル</b>
+                  <code class="d-block"><pre>
+&lt;v-col cols="12" md="6" xl="3" class="green"&gt;
+  &lt;v-card height="100%"&gt;
+    &lt;v-card-title&gt;Title Text&lt;/v-card-title&gt;
+    &lt;v-card-text&gt;Contents Text&lt;/v-card-text&gt;
+  &lt;/v-card&gt;
+&lt;/v-col&gt;</pre></code>
+                </v-card-text>
+              </v-card>
+            </v-col>
+            <v-col cols="12" md="6" lg="3">
+              <v-card height="100%">
+                <v-card-title>Card 4</v-card-title>
+                <v-card-text>
+                  <code>v-card</code>に<code>height="100"</code>をつけると
+                  <code>v-col</code>の最大の高さに合わせてくれます。
+                </v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
+
+          <v-row>
+            <v-col cols="12" md="10" lg="8" xl="7">
+              <v-card outlined tile>
+                <v-card-text>
+                  <b>例5のコードサンプル</b>
+                  <code class="d-block"><pre>
+&lt;v-container fluid&gt;
+  &lt;v-row&gt;
+    &lt;v-col cols="12" md="6" lg="3" class="grey"&gt;
+      &lt;v-card height="100%"&gt;
+        &lt;v-card-title&gt;Card 1&lt;/v-card-title&gt;
+        &lt;v-card-text&gt;Text&lt;/v-card-text&gt;
+      &lt;/v-card&gt;
+    &lt;/v-col&gt;
+    &lt;v-col cols="12" md="6" lg="3"&gt;
+      &lt;v-card height="100%"&gt;
+        &lt;v-card-title&gt;Card 2&lt;/v-card-title&gt;
+        &lt;v-card-text&gt;Text&lt;/v-card-text&gt;
+      &lt;/v-card&gt;
+    &lt;/v-col&gt;
+    &lt;v-col cols="12" md="6" lg="3"&gt;
+      &lt;v-card height="100%"&gt;
+        &lt;v-card-title&gt;Card 3&lt;/v-card-title&gt;
+        &lt;v-card-text&gt;Text&lt;/v-card-text&gt;
+      &lt;/v-card&gt;
+    &lt;/v-col&gt;
+    &lt;v-col cols="12" md="6" lg="3"&gt;
+      &lt;v-card height="100%"&gt;
+        &lt;v-card-title&gt;Card 4&lt;/v-card-title&gt;
+        &lt;v-card-text&gt;Text&lt;/v-card-text&gt;
+      &lt;/v-card&gt;
+    &lt;/v-col&gt;
+  &lt;/v-row&gt;
+&lt;/v-container&gt;</pre></code>
+                  <p class="mt-2">
+
+                  </p>
+                </v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
+
+
+          <v-row>
+            <v-col cols="12" md="10" lg="8" xl="7">
+              <v-card outlined tile>
+                <v-card-text>
+                  <h4 id="note1">補足: v-container のfluid属性の有無による違い</h4>
+                  <ul>
+                    <li>fluid属性なしの場合、幅 md以上で、段階的に幅が大きくなります。</li>
+                    <li>fluid属性ありの場合、幅いっぱいに表示され続けます。</li>
+                  </ul>
+                  <h4>fluid属性なしとありの使い分け</h4>
+                  <p>
+                    fluid属性がない場合は、段階的に幅が大きくなるためレイアウトチェックのコストが減ります。<br>
+                    fluid属性がある場合は、実質的に無限段階のパターン(画面幅)でチェックする必要があります。
+                    また、横幅が大きくなると、文章を読む際の目の横移動の量が増えるため、文章が読みづらくなることがあります。
+                  </p>
+                  <p>
+                    ページの内容が、主に文章で構成される場合は、fluidをつけないほうがレイアウトしやすく文章も読みやすくなります。<br>
+                    ポータルサイトなどで多くの情報を一度に見せたい場合や、グラフ・表などを多く使用する場合は、
+                    fluid属性をつけることで、無駄な余白が出ないようになります。
+                    その場合、なるべく目の横移動の量が多くなりすぎないように、レイアウトを調整することを意識しましょう。<br>
+                    なお、どのような状況でも、目の横移動量に関して注意しておくと、見やすいページになります。
+                    場合によっては、<code>style="max-width:1000px;"</code> 等をつけて、最大幅を指定することもあります。
+                  </p>
+                </v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
+        </v-container>
+
+        <div class="my-2 pa-2 text-center d-md-none white--text indigo">
+          &#x25c0;もっと横幅を広げて！&#x25b6;
+        </div>
+        <v-container style="border:4px solid #311B92;">
+          <b><small>v-container</small></b>
+          <div>fluid なし</div>
+        </v-container>
+        <v-container fluid style="border:4px solid #B71C1C;">
+          <b><small>v-container</small></b>
+          <div>fluid あり</div>
+        </v-container>
+
+      </v-main>
+    </v-app>
+  </div>
+
+  <!-- Vue.js 2.6.12 を読み込む(バージョン固定、本番環境用) -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+
+  <!-- Vue.js を読み込む(最新のバージョンを自動選択する場合はこちらを使用する) -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script> -->
+
+  <!-- Vuetifyに必要なファイルを読み込む -->
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.js"></script>
+
+  <!-- スムーズスクロールライブラリ -->
+  <script src="https://cdn.jsdelivr.net/npm/vue-smooth-scroll@1.0.13/dist/vue-smooth-scroll.min.js"></script>
+
+
+  <script>
+    const vueSmoothScroll = window['VueSmoothScroll'];
+    Vue.use(vueSmoothScroll);
+    const app = new Vue({
+      el: '#app',
+      vuetify: new Vuetify(),
+      data() {
+        return {
+          width: 0,
+          breakpointList: [
+            {
+              icon: "mdi-cellphone-iphone",
+              device: "スマートフォン縦",
+              code: "標準(xs)",
+              type: "Extra Small",
+              range: "~ 600px",
+            },
+            {
+              icon: "mdi-tablet",
+              device: "スマートフォン横・タブレット",
+              code: "sm",
+              type: "Small",
+              range: "600px ~ 960px",
+            },
+            {
+              icon: "mdi-laptop",
+              device: "タブレット横・ノートパソコン 小",
+              code: "md",
+              type: "Medium",
+              range: "960px ~ 1264px",
+            },
+            {
+              icon: "mdi-monitor",
+              device: "ノートパソコン 中",
+              code: "lg",
+              type: "Large",
+              range: "1264px ~ 1904px",
+            },
+            {
+              icon: "mdi-television",
+              device: "デスクトップパソコン",
+              code: "xl",
+              type: "Extra Large",
+              range: "1904px ~",
+            }
+          ]
+        }
+      },
+      created() {
+        this.onResize();
+        window.onresize = this.onResize;
+      },
+      methods: {
+        onResize() {
+          this.width = window.innerWidth;
+        }
+      },
+      computed: {
+        sizeToColor() {
+          if (this.$vuetify.breakpoint.xsOnly) return "pink";
+          if (this.$vuetify.breakpoint.smOnly) return "indigo";
+          if (this.$vuetify.breakpoint.mdOnly) return "teal";
+          if (this.$vuetify.breakpoint.lgOnly) return "orange";
+          return "brown";
+        },
+      }
+    })
+  </script>
+</body>
+
+</html>
