@@ -503,6 +503,7 @@
                   </div>
 
                   <p>
+                    スクロールバーが表示される場合はその領域を含みます。<br>
                     Vuetifyドキュメントを参考に一部修正。
                     オリジナルは
                     <a href="https://vuetifyjs.com/en/features/breakpoints/#display-breakpoints" target="_blank">
@@ -1021,13 +1022,23 @@
         <div class="my-2 pa-2 text-center d-md-none white--text indigo">
           &#x25c0;もっと横幅を広げて！&#x25b6;
         </div>
-        <v-container style="border:4px solid #311B92;">
+        <v-container ref="container-no-fluid" style="border:4px solid #311B92;">
           <b><small>v-container</small></b>
           <div>fluid なし</div>
+          <div class="text-center">
+            <v-icon left>mdi-arrow-collapse-left</v-icon>
+            {{ containerNoFluidWidth }}px
+            <v-icon right>mdi-arrow-collapse-right</v-icon>
+          </div>
         </v-container>
-        <v-container fluid style="border:4px solid #B71C1C;">
+        <v-container ref="container-fluid" fluid style="border:4px solid #B71C1C;">
           <b><small>v-container</small></b>
           <div>fluid あり</div>
+          <div class="text-center">
+            <v-icon left>mdi-arrow-collapse-left</v-icon>
+            {{ containerFluidWidth }}px
+            <v-icon right>mdi-arrow-collapse-right</v-icon>
+          </div>
         </v-container>
 
       </v-main>
@@ -1056,6 +1067,8 @@
       data() {
         return {
           width: 0,
+          containerFluidWidth: 0,
+          containerNoFluidWidth: 0,
           breakpointList: [
             {
               icon: "mdi-cellphone-iphone",
@@ -1095,13 +1108,16 @@
           ]
         }
       },
-      created() {
+      mounted() {
         this.onResize();
         window.onresize = this.onResize;
       },
       methods: {
         onResize() {
           this.width = window.innerWidth;
+          this.containerNoFluidWidth = this.$refs['container-no-fluid'].offsetWidth
+          this.containerFluidWidth = this.$refs['container-fluid'].offsetWidth
+          console.log();
         }
       },
       computed: {
