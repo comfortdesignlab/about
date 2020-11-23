@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!-- タブに表示されるタイトルを設定する -->
+  <title>Todo App Tiny</title>
+
+  <!-- 文字コードを指定する -->
+  <meta charset="UTF-8" />
+
+  <!-- サーバーに公開したときに検索結果に表示されないようにする -->
+  <meta name="robots" content="noindex" />
+
+  <!-- Vuetifyに必要なファイルを読み込む -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+
+  <!-- モバイル表示時に適切に表示されるように設定する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    /* チラツキ防止 */
+    [v-cloak] {
+      display: none;
+    }
+  </style>
+
+</head>
+
+<body style="background-color:#ECEFF1;">
+  <div id="app" v-cloak>
+    <v-app style="background-color:#ECEFF1;">
+      <v-app-bar dark app dense color="error">TODO TINY</v-app-bar>
+      <v-main>
+        <v-container fluid>
+          <v-row>
+            <v-col cols="12" lg="3">
+              <v-card>
+                <v-card-title>
+                  新規追加
+                </v-card-title>
+                <v-divider></v-divider>
+                <v-card-text>
+                  <v-text-field v-model="title" label="タイトル" outlined class="mb-1" dense>
+                  </v-text-field>
+                  <div class="text-right">
+                    <v-btn color="primary" v-on:click="addItem()">
+                      <v-icon left>mdi-plus</v-icon>
+                      追加
+                    </v-btn>
+                  </div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+
+            <v-col cols="12" lg="9">
+              <v-card>
+                <v-card-title>
+                  To Do List
+                </v-card-title>
+                <v-divider></v-divider>
+                <v-data-table :headers="todoHeaders" :items="todoList">
+                  <template v-slot:item.title="{ item }">
+                    <div v-if="item.isDone">
+                      <v-icon left>mdi-checkbox-marked</v-icon>
+                      <s>{{ item.title }}</s>
+                    </div>
+                    <div v-else>
+                      <v-icon left>mdi-checkbox-blank-outline</v-icon>
+                      {{ item.title }}
+                    </div>
+                  </template>
+                  <template v-slot:item.actions="{ item }">
+                    <v-btn color="primary" v-if="item.isDone" outlined v-on:click="doneItem(item.todoId, false)">
+                      未完了に戻す
+                    </v-btn>
+                    <v-btn color="primary" v-else v-on:click="doneItem(item.todoId, true)">
+                      <v-icon></v-icon>
+                      完了にする
+                    </v-btn>
+                    <v-btn color="error" v-on:click="deleteItem(item.todoId)" icon>
+                      <v-icon>mdi-delete</v-icon>
+                    </v-btn>
+                  </template>
+                </v-data-table>
+              </v-card>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-main>
+    </v-app>
+  </div>
+
+  <!-- Vue.js 2.6.12 を読み込む(バージョン固定、本番環境用) -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script> -->
+
+  <!-- Vue.js を読み込む(開発モード) -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+
+  <!-- Vuetifyに必要なファイルを読み込む -->
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.js"></script>
+
+  <!-- UUIDジェネレーター -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.1/uuid.min.js"></script>
+
+  <script>
+    const app = new Vue({
+      el: "#app",
+      vuetify: new Vuetify(),
+      data() {
+        return {
+          title: "",
+          todoHeaders: [
+            { text: "タイトル", value: "title" },
+            { text: "操作", value: "actions", sortable: false, align: "end" },
+          ],
+          todoList: [
+            {
+              todoId: uuid.v4(),
+              isDone: false,
+              title: "ヨーグルトを買う",
+            },
+            {
+              todoId: uuid.v4(),
+              isDone: false,
+              title: "卵を食べる",
+            },
+            {
+              todoId: uuid.v4(),
+              isDone: false,
+              title: "明日13時 電話する",
+            },
+          ]
+        }
+      },
+      methods: {
+        findIndexByTodoId(todoId) {
+          return this.todoList.findIndex(v => v.todoId == todoId);
+        },
+        addItem() {
+          if (this.title == "") return;
+          this.todoList.push({
+            todoId: uuid.v4(),
+            isDone: false,
+            title: this.title,
+          })
+          this.title = "";
+        },
+        doneItem(todoId, isDone) {
+          let index = this.findIndexByTodoId(todoId);
+          if (index == -1) return;
+          this.todoList[index].isDone = isDone;
+        },
+        deleteItem(todoId) {
+          let index = this.findIndexByTodoId(todoId);
+          if (index == -1) return;
+          if (!window.confirm(`「${this.todoList[index].title}」のTODOを削除しますか?`)) return;
+          this.todoList.splice(index, 1);
+        },
+      }
+    })
+  </script>
+</body>
+
+</html>

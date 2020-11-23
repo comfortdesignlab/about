@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!-- タブに表示されるタイトルを設定する -->
+  <title>Vueの練習 1</title>
+
+  <!-- 文字コードを指定する -->
+  <meta charset="UTF-8" />
+
+  <!-- サーバーに公開したときに検索結果に表示されないようにする -->
+  <meta name="robots" content="noindex" />
+</head>
+
+<body>
+  <div id="app">
+    <p>{{ message }}</p>
+    <div>{{ inputText1 }}</div>
+    <input type="text" v-model="inputText1">
+    <input type="button" value="ボタン" v-on:click="showMessage()">
+  </div>
+
+  <!-- Vue.js を読み込む(開発モード) -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+
+  <script>
+    const app = new Vue({
+      el: "#app",
+      data() {
+        return {
+          message: "Hello Vue World",
+          inputText1: "",
+        }
+      },
+      methods: {
+        showMessage() {
+          console.log(this.inputText1);
+          alert(this.inputText1);
+        }
+      }
+    })
+  </script>
+</body>
+
+</html>

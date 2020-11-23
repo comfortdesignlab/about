@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!-- タブに表示されるタイトルを設定する -->
+  <title>Vueの練習 2</title>
+
+  <!-- 文字コードを指定する -->
+  <meta charset="UTF-8" />
+
+  <!-- サーバーに公開したときに検索結果に表示されないようにする -->
+  <meta name="robots" content="noindex" />
+
+  <style>
+    /* チラツキ防止 */
+    [v-cloak] {
+      display: none;
+    }
+
+    .div-container {
+      /* 背景色 */
+      background-color: #C8E6C9;
+      /* 角丸 */
+      border-radius: 5px;
+      /* 影 */
+      box-shadow: 0 0 5px #ccc;
+      /* 最大横 */
+      max-width: 600px;
+      /* 内側の余白 */
+      padding: 10px;
+    }
+
+    .div-message {
+      /* 背景色 → .div-containerの中に入れる想定で、文字を見やすくするために白に設定 */
+      background-color: #FFFFFF;
+      /* 枠線 → 太さ・スタイル(実線/点線等)・色を指定 */
+      border: 1px solid #4CAF50;
+      /* 横・高さを設定する際の枠や余白の関係を設定
+       * → paddingとborderを横と高さに合わせる */
+      box-sizing: border-box;
+      /* 最大高さ */
+      max-height: 300px;
+      /* 中身が設定した枠より大きくなった場合にどうするか
+       * → 自動でスクロールバーを表示する */
+      overflow: auto;
+      /* 内側の余白 */
+      padding: 10px;
+    }
+
+    .div-length-head {
+      /* 枠線(右側のみ) → 太さ・スタイル(実線/点線等)・色を指定 */
+      border-right: 2px solid #4CAF50AA;
+      /* 表示形式の指定　→ 文字扱いだがwidthやheightを指定できる設定 */
+      display: inline-block;
+      /* フォントサイズ　→ 親要素より80%のサイズで表示 */
+      font-size: 0.8rem;
+      /* 外側の余白(上のみ、下のみ) 
+       * ※要素のmargin同士が隣り合ったときは重なる。(大きい方のmarginの値になる) */
+      margin-top: 4px;
+      margin-bottom: 4px;
+      /* 内側の余白(右のみ) */
+      padding-right: 4px;
+      /* 右揃え */
+      text-align: right;
+      /* 行の中の縦方向の位置を指定 */
+      vertical-align: middle;
+      /* 横 */
+      width: 150px;
+    }
+
+    .textarea-main {
+      /* 枠線 → 太さ・スタイル(実線/点線等)・色を指定 */
+      border: 1px solid #4CAF50;
+      /* 横・高さを設定する際の枠や余白の関係を設定
+       * → paddingとborderを横と高さに合わせる */
+      box-sizing: border-box;
+      /* 最小高さ */
+      min-height: 150px;
+      /* 横 */
+      width: 100%;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div id="app" v-cloak>
+    <div class="div-container">
+      <h1>{{ title }}</h1>
+
+      <small>入力された文字列</small>
+      <div class="div-message">
+        {{ textFieldMessage || "フィールドに文字を入力してください" }}
+      </div>
+
+      <small>文字数</small>
+      <div class="div-message">
+        <div class="div-length-head">Length</div>
+        {{ textFieldMessage.length }} 文字
+        <br />
+        <div class="div-length-head">
+          Length <br />
+          (Fix Multibyte)
+        </div>
+        {{ textFieldMessageFixMultiByteLength }} 文字
+        <br />
+        <div class="div-length-head">英数字</div>
+        {{ textFieldMessageEISULength }} 文字
+        <br />
+        <div class="div-length-head">マルチバイト</div>
+        {{ textFieldMessageOnlyMultiByteLength }} 文字<br>
+      </div>
+
+      <small>入力フィールド</small>
+      <textarea v-model="textFieldMessage" class="textarea-main"></textarea>
+
+    </div>
+  </div>
+
+  <!-- Vue.js を読み込む(開発モード) -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+
+  <script>
+    const app = new Vue({
+      el: "#app",
+      data() {
+        return {
+          title: "Hello Vue World",
+          textFieldMessage: "😀",
+        }
+      },
+      computed: {
+        textFieldMessageFixMultiByteLength() {
+          return Array.from(this.textFieldMessage).length
+        },
+        textFieldMessageEISULength() {
+          return this.textFieldMessage.replace(/[^A-Za-z0-9]/g, "").length;
+        },
+        textFieldMessageOnlyMultiByteLength() {
+          return Array.from(this.textFieldMessage.replace(/[\x00-\x7F]/g, "")).length;
+        }
+      }
+    })
+  </script>
+</body>
+
+</html>

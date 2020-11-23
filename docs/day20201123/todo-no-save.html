@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!-- タブに表示されるタイトルを設定する -->
+  <title>Todo App (no save)</title>
+
+  <!-- 文字コードを指定する -->
+  <meta charset="UTF-8" />
+
+  <!-- サーバーに公開したときに検索結果に表示されないようにする -->
+  <meta name="robots" content="noindex" />
+
+  <!-- Vuetifyに必要なファイルを読み込む -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+
+  <!-- モバイル表示時に適切に表示されるように設定する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    /* チラツキ防止 */
+    [v-cloak] {
+      display: none;
+    }
+  </style>
+
+</head>
+
+<body style="background-color:#ECEFF1;">
+  <div id="app" v-cloak>
+    <v-app style="background-color:#ECEFF1;">
+      <v-app-bar dark app dense color="secondary">TODO NO SAVE</v-app-bar>
+      <v-main>
+        <v-container fluid>
+          <v-row>
+            <v-col cols="12" lg="3">
+              <v-card>
+                <v-card-title>
+                  新規追加
+                </v-card-title>
+                <v-divider></v-divider>
+                <v-card-text>
+                  <v-text-field v-model="title" label="タイトル" outlined class="mb-1" dense>
+                  </v-text-field>
+                  <v-textarea v-model="contents" label="内容" outlined class="mb-1" dense>
+                  </v-textarea>
+                  <div class="text-right">
+                    <v-btn color="primary" v-on:click="addItem()">
+                      <v-icon left>mdi-plus</v-icon>
+                      追加
+                    </v-btn>
+                  </div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+
+            <v-col cols="12" lg="9">
+              <v-card>
+                <v-card-title>
+                  To Do List
+                </v-card-title>
+                <v-divider></v-divider>
+                <v-data-table :headers="todoHeaders" :items="todoList">
+                  <template v-slot:item.title="{ item }">
+                    <div v-if="item.isDone">
+                      <v-icon left>mdi-checkbox-marked</v-icon>
+                      <s>{{ item.title }}</s>
+                    </div>
+                    <div v-else>
+                      <v-icon left>mdi-checkbox-blank-outline</v-icon>
+                      {{ item.title }}
+                    </div>
+                  </template>s
+                  <template v-slot:item.created="{ item }">
+                    {{ toStringFromUnixTime(item.createdAt) }}
+                  </template>
+                  <template v-slot:item.updated="{ item }">
+                    {{ toStringFromUnixTime(item.updatedAt) }}
+                  </template>
+                  <template v-slot:item.actions="{ item }">
+                    <v-btn color="primary" v-if="item.isDone" outlined v-on:click="doneItem(item.todoId, false)">
+                      未完了に戻す
+                    </v-btn>
+                    <v-btn color="primary" v-else v-on:click="doneItem(item.todoId, true)">
+                      <v-icon></v-icon>
+                      完了にする
+                    </v-btn>
+                    <v-dialog max-width="600">
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-btn color="secondary" dark v-bind="attrs" v-on="on">詳細</v-btn>
+                      </template>
+                      <v-card>
+                        <v-card-title>{{ item.title }}</v-card-title>
+                        <v-card-text>
+                          <div class="pb-3">{{ item.contents || "詳細はありません" }}</div>
+                          <v-divider></v-divider>
+                          <div>
+                            <small>TODO ID: {{ item.todoId }}</small>
+                          </div>
+                          <div>
+                            <small>作成日時: {{ toStringFromUnixTime(item.createdAt) }}</small>
+                            <small>更新日時: {{ toStringFromUnixTime(item.updatedAt) }}</small>
+                          </div>
+                        </v-card-text>
+                      </v-card>
+                    </v-dialog>
+                    <v-btn color="info" v-on:click="openEditDialog(item.todoId)">編集</v-btn>
+                    <v-btn color="error" v-on:click="deleteItem(item.todoId)" icon>
+                      <v-icon>mdi-delete</v-icon>
+                    </v-btn>
+                  </template>
+                </v-data-table>
+              </v-card>
+            </v-col>
+          </v-row>
+          <v-dialog v-model="isOpenEditDialog" max-width="600">
+            <v-card>
+              <v-card-title>アイテムを編集</v-card-title>
+              <v-divider></v-divider>
+              <v-card-text v-if="tempItem">
+                <v-text-field v-model="tempItem.title" label="タイトル" outlined class="my-3" dense>
+                </v-text-field>
+                <v-textarea v-model="tempItem.contents" label="内容" outlined class="mb-1" dense>
+                </v-textarea>
+                <v-checkbox v-model="tempItem.isDone" label="完了"></v-checkbox>
+                <div>
+                  <small>TODO ID: {{ tempItem.todoId }}</small>
+                </div>
+                <div>
+                  <small>作成日時: {{ toStringFromUnixTime(tempItem.createdAt) }}</small>
+                  <small>更新日時: {{ toStringFromUnixTime(tempItem.updatedAt) }}</small>
+                </div>
+              </v-card-text>
+              <v-divider></v-divider>
+              <v-card-actions>
+                <v-btn text color="secondary" v-on:click="isOpenEditDialog = false">キャンセル</v-btn>
+                <v-spacer></v-spacer>
+                <v-btn color="primary" v-on:click="editItem()">変更</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+        </v-container>
+      </v-main>
+    </v-app>
+  </div>
+
+  <!-- Vue.js 2.6.12 を読み込む(バージョン固定、本番環境用) -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script> -->
+
+  <!-- Vue.js を読み込む(開発モード) -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+
+  <!-- Vuetifyに必要なファイルを読み込む -->
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.js"></script>
+
+  <!-- UUIDジェネレーター -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.1/uuid.min.js"></script>
+
+  <!-- Moment + Moment Timezone -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.32/moment-timezone-with-data.min.js"></script>
+
+
+
+  <script>
+    const TIMEZONE = "Asia/Tokyo";
+    const DATETIME_VIEW_FORMAT = "YYYY/MM/DD HH:mm:ss(z)";
+
+    const app = new Vue({
+      el: "#app",
+      vuetify: new Vuetify(),
+      data() {
+        return {
+          title: "",
+          contents: "",
+
+          isOpenEditDialog: false,
+          tempItem: null,
+
+          todoHeaders: [
+            { text: "タイトル", value: "title" },
+            { text: "作成日時", value: "created" },
+            { text: "更新日時", value: "updated" },
+            { text: "操作", value: "actions", sortable: false, align: "end" },
+          ],
+          todoList: [
+            {
+              todoId: uuid.v4(),
+              isDone: false,
+              title: "ヨーグルトを買う",
+              contents: "もう冷蔵庫にない",
+              createdAt: 1606043006,
+              updatedAt: 1606043007,
+            },
+            {
+              todoId: uuid.v4(),
+              isDone: false,
+              title: "卵を食べる",
+              contents: "賞味期限が近い",
+              createdAt: 1606043008,
+              updatedAt: 1606043009,
+            },
+            {
+              todoId: uuid.v4(),
+              isDone: false,
+              title: "明日13時 電話する",
+              contents: "",
+              createdAt: 1606043010,
+              updatedAt: 1606043011,
+            },
+          ]
+        }
+      },
+      methods: {
+        addItem() {
+          if (this.title == "") return alert("タイトルは必須です");
+          this.todoList.push({
+            todoId: uuid.v4(),
+            isDone: false,
+            title: this.title,
+            contents: this.contents,
+            createdAt: moment().unix(),
+            updatedAt: moment().unix(),
+          })
+          this.title = "";
+          this.contents = "";
+        },
+        openEditDialog(todoId) {
+          let index = this.findIndexByTodoId(todoId);
+          if (index == -1) return;
+          this.isOpenEditDialog = true;
+          this.tempItem = Object.assign({}, JSON.parse(JSON.stringify(this.todoList[index])));
+        },
+        editItem() {
+          if (!this.tempItem) return;
+          let index = this.findIndexByTodoId(this.tempItem.todoId);
+          if (index == -1) return;
+          this.tempItem.updatedAt = moment().unix();
+          this.$set(this.todoList, index, this.tempItem);
+          this.isOpenEditDialog = false;
+        },
+        doneItem(todoId, isDone) {
+          let index = this.findIndexByTodoId(todoId);
+          if (index == -1) return;
+          this.todoList[index].isDone = isDone;
+        },
+        deleteItem(todoId) {
+          let index = this.findIndexByTodoId(todoId);
+          if (index == -1) return;
+          if (!window.confirm(`「${this.todoList[index].title}」のTODOを削除しますか?`)) return;
+          this.todoList.splice(index, 1);
+        },
+
+        findIndexByTodoId(todoId) {
+          return this.todoList.findIndex(v => v.todoId == todoId);
+        },
+        toStringFromUnixTime(unixTimeSec) {
+          return moment.unix(unixTimeSec).tz(TIMEZONE).format(DATETIME_VIEW_FORMAT);
+        }
+      }
+    })
+  </script>
+</body>
+
+</html>
