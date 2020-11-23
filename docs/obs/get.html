@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!-- タブに表示されるタイトルを設定する -->
+  <title>OBS MESSAGE GETTER</title>
+
+  <!-- 文字コードを指定する -->
+  <meta charset="UTF-8" />
+
+  <!-- サーバーに公開したときに検索結果に表示されないようにする -->
+  <meta name="robots" content="noindex" />
+
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@700&display=swap" rel="stylesheet">
+
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+    #app{
+      padding:5px;
+    }
+    body,
+    pre {
+      font-size: 40px;
+      font-family: 'M PLUS 1p', sans-serif;
+      text-shadow: 0 0 5px #333;
+      color: white;
+      background-color: rgba(0, 0, 0, 0);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <pre>{{ nowMessage }}</pre>
+  </div>
+
+  <!-- Vue.js 2.6.12 を読み込む(バージョン固定、本番環境用) -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+
+  <!-- Vue.js を読み込む(開発モード) -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script> -->
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-firestore.js"></script>
+
+  <script>
+    firebase.initializeApp({
+      apiKey: "AIzaSyDs3esOv-6nZC72gT03ed1nONaIr6uSX9w",
+      authDomain: "cdl-github-practice.firebaseapp.com",
+      databaseURL: "https://cdl-github-practice.firebaseio.com",
+      projectId: "cdl-github-practice",
+      storageBucket: "cdl-github-practice.appspot.com",
+      messagingSenderId: "539970265531",
+      appId: "1:539970265531:web:9cab1715a6b90ee3f6a49e"
+    });
+    // firebase.firestore().useEmulator("localhost", 8080);
+    const COLLECTION_OBS = "obs";
+    const DOC_MESSAGE = "message";
+
+
+    const app = new Vue({
+      el: "#app",
+      data() {
+        return {
+          firebase,
+          nowMessage: "",
+        }
+      },
+      mounted() {
+        this.firestoreUnsubscribe = firebase.firestore()
+          .collection(COLLECTION_OBS)
+          .doc(DOC_MESSAGE)
+          .onSnapshot((doc) => {
+            let data = doc.data();
+            if (!data) return;
+            this.nowMessage = data.text;
+          });
+      },
+      methods: {
+
+      }
+    })
+  </script>
+</body>
+
+</html>
