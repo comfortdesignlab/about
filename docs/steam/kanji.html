@@ -71,7 +71,7 @@
               <v-card>
                 <v-card-text>
                   <b>チェックしたいテキストを入力します</b>
-                  <v-textarea v-model="inputText" outlined dense hide-details height="400">
+                  <v-textarea ref="textarea" v-model="inputText" outlined dense hide-details height="400">
                   </v-textarea>
                 </v-card-text>
                 <v-card-actions>
@@ -157,20 +157,39 @@
             </v-col>
           </v-row>
 
-
-
           <v-dialog v-model="isOpenDitailsDialog">
-            <v-card>
-              <v-card-title>詳細</v-card-title>
+            <v-toolbar dark color="grey darken-3">
+              <v-icon left>mdi-information-outline</v-icon>
+              <v-toolbar-title>詳細</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-toolbar-items>
+                <v-btn text @click="isOpenDitailsDialog = false">
+                  <v-icon left>mdi-close</v-icon> 閉じる
+                </v-btn>
+              </v-toolbar-items>
+            </v-toolbar>
+            <v-card tile>
               <v-card-text>
-                <span class="red--text">調整中</span>
-                <pre>{{ checkText || '入力なし' }}</pre>
+                <b class="d-block pt-3">フィルター</b>
+                <v-checkbox v-for="(k,i) in knjList" :key="'ignore'+i" v-model="k.isIncludeDitails"
+                  class="d-inline-block my-0 mx-2" :label="`${k.title}で習得(${k.countTotal}箇所)`" color="blue" hide-details
+                  @click="updateDitailsHtml()"></v-checkbox>
+                <v-checkbox v-model="isIncludeDitailsOther" class="d-inline-block my-0 mx-2"
+                  :label="'その他の漢字'+  (countOtherTotal>0? `(${countOtherTotal}箇所)`:'(該当なし)')" color="blue" hide-details
+                  @click="updateDitailsHtml()"></v-checkbox>
+
+
+                <b class="d-block mt-2">内容</b>
+                <div v-html="checkTextHtml || '入力なし'" class="mx-2 pa-3"
+                  style="border:1px solid rgba(0, 0, 0, 0.2);cursor: default;font-size:1rem;"></div>
+
+                <b class="d-block mt-2">凡例</b>
+                <div v-for="(k,i) in knjList" :key="'hanrei'+i" class="d-inline-block mx-2">
+                  <span style="cursor: pointer;user-select: none;"
+                    @click="k.isIncludeDitails =!k.isIncludeDitails;updateDitailsHtml()"
+                    :class="k.isIncludeDitails?k.ditailsClass:'text-decoration-line-through'">{{ `${k.title}で習得` + (k.countUnique> 0 ? `(${k.countUnique}字)`:'' ) }}</span>
+                </div>
               </v-card-text>
-              <v-divider></v-divider>
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn text @click="isOpenDitailsDialog = false">閉じる</v-btn>
-              </v-card-actions>
             </v-card>
           </v-dialog>
           <v-dialog v-model="isOpenKnjListDialog" width="600">
@@ -194,25 +213,30 @@
   </div>
 
   <!-- Vue.js 2.6.12 を読み込む(バージョン固定、本番環境用) -->
-  <!-- <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script> -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
 
   <!-- Vue.js を読み込む(開発モード) -->
-  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script> -->
 
   <!-- Vuetifyに必要なファイルを読み込む -->
   <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.js"></script>
 
   <!-- UUIDジェネレーター -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.1/uuid.min.js"></script>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.1/uuid.min.js"></script> -->
 
   <!-- Moment + Moment Timezone -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.32/moment-timezone-with-data.min.js"></script>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script> -->
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.32/moment-timezone-with-data.min.js"></script> -->
 
   <!-- 漢字インポート -->
   <script src="./kanjilist.js"></script>
 
   <script>
+
+    const ignore1 = /[A-Za-z0-9,.、。\n\s\tＡ-Ｚａ-ｚ０-９]/g;
+    const ignore2 = /[\u3040-\u309f\u30a0-\u30ff\u3005-\u3006]/g;
+    const ignore3 = /[「」【】（）＜＞『』〈〉〔〕《》｛｝\{\}\(\)\[\]"'？：:～！\!\/\\─\-＝－－]/g;
+
     const app = new Vue({
       el: "#app",
       vuetify: new Vuetify(),
@@ -220,76 +244,101 @@
         return {
           tdu: unescape('%u6771%u4EAC%u96FB%u6A5F%u5927%u5B66%20%u77E5%u7684%u60C5%u5831%u7A7A%u9593%u7814%u7A76%u5BA4'),
           knj, // 別ファイルからインポート
-          inputText: "",
+          inputText: `常用漢字に対応しています。常用漢字は2136字あり、うち1026字を小学校で習得し、1110字を中学校で習得します。
+２０２０年４月から小学校で習得する漢字が二十文字増えました。また、一部の漢字は学習する学年が変更されました。この分にも対応しています。
+常用外漢字のうち「𩸽」などの特殊なマルチバイトであっても正常にカウントできていると思います。
+適当な記号は常用漢字以外の文字に含まれないようにしていますが、☺などの記号も「その他の漢字」としてカウントされてしまいます。ご了承ください。`,
           checkText: "",
+          checkTextHtml: "",
           isChecking: false,
 
           knjList: [
             {
               title: "小学校1年生",
+              ditailsClass: "blue--text text--lighten-3",
               countTotal: 0,
               countUnique: 0,
               knj: "",
+              isIncludeDitails: false,
             },
             {
               title: "小学校2年生",
+              ditailsClass: "blue--text",
               countTotal: 0,
               countUnique: 0,
               knj: "",
+              isIncludeDitails: false,
             },
             {
               title: "小学校3年生",
+              ditailsClass: "blue--text text--darken-4",
               countTotal: 0,
               countUnique: 0,
               knj: "",
+              isIncludeDitails: false,
             },
             {
               title: "小学校4年生",
+              ditailsClass: "indigo--text text--lighten-3",
               countTotal: 0,
               countUnique: 0,
               knj: "",
+              isIncludeDitails: false,
             },
             {
               title: "小学校5年生",
+              ditailsClass: "indigo--text",
               countTotal: 0,
               countUnique: 0,
               knj: "",
+              isIncludeDitails: false,
             },
             {
               title: "小学校6年生",
+              ditailsClass: "indigo--text text--darken-4",
               countTotal: 0,
               countUnique: 0,
               knj: "",
+              isIncludeDitails: false,
             },
             {
               title: "中学校1年生あたり",
+              ditailsClass: "teal--text text--lighten-3",
               countTotal: 0,
               countUnique: 0,
               knj: "",
+              isIncludeDitails: true,
             },
             {
               title: "中学校2年生あたり",
+              ditailsClass: "teal--text",
               countTotal: 0,
               countUnique: 0,
               knj: "",
+              isIncludeDitails: true,
             },
             {
               title: "中学校3年生あたり",
+              ditailsClass: "teal--text text--darken-4",
               countTotal: 0,
               countUnique: 0,
               knj: "",
+              isIncludeDitails: true,
             },
             {
               title: "中学校(難)",
+              ditailsClass: "green--text",
               countTotal: 0,
               countUnique: 0,
               knj: "",
+              isIncludeDitails: true,
             }
           ],
-          
+
           countOtherTotal: 0,
           countOtherUnique: 0,
           knjOtherUnique: "",
+          isIncludeDitailsOther: true,
 
           typeCallTimer: 0,
           altTimer: 0,
@@ -300,12 +349,14 @@
         }
       },
       mounted() {
+        this.$refs['textarea'].focus();
       },
       methods: {
         callAlt() {
           let now = (new Date()).getTime();
           if (this.altTimer == 0 || now - this.altTimer > 200) return this.altTimer = now;
           this.isOpenDitailsDialog = !this.isOpenDitailsDialog;
+          if (!this.isOpenDitailsDialog) this.$refs['textarea'].focus();
         },
         openKnjDialog(index) {
           if (index == -1) {
@@ -319,6 +370,27 @@
           this.dialogKnjTitle = this.knjList[index].title + " 漢字一覧"
           this.dialogKnjText = this.knj[index]
           this.isOpenKnjListDialog = true;
+        },
+        updateDitailsHtml() {
+          let textArr = Array.from(this.checkText);
+          this.checkTextHtml = textArr.map(e => {
+            if (e == '\n') return '<br>';
+            for (let i = 0; i < this.knjList.length; i++) {
+              if (this.knjList[i].knj.indexOf(e) != -1) {
+                if (this.knjList[i].isIncludeDitails)
+                  return `<span class="${this.knjList[i].ditailsClass} text-decoration-underline" title="${this.knjList[i].title}で習得">${e}</span>`;
+                else
+                  return `<span title="${this.knjList[i].title}で習得">${e}</span>`;
+              }
+            }
+            if (this.knjOtherUnique.indexOf(e) != -1) {
+              if (this.isIncludeDitailsOther)
+                return `<span class="red white--text" title="常用外漢字">${e}</span>`;
+              else
+                return `<span title="常用外漢字">${e}</span>`;
+            }
+            return `${e}`;
+          }).join("");
         }
       },
       computed: {
@@ -333,7 +405,7 @@
         },
         dialogCountKnjText() {
           return Array.from(this.dialogKnjText).length;
-        }
+        },
       },
       watch: {
         inputText: {
@@ -361,8 +433,9 @@
               this.knjList[i].knj = dupKnjArrUnique.join('');
             }
 
-            const ignoreKanaText = v.replace(/[A-Za-z0-9\n\s\tＡ-Ｚａ-ｚ０-９]/g, '');
-            const ignoreKanaTextArr = ignoreKanaText.replace(/[\u3040-\u309f\u30a0-\u30ff\u3005-\u3006]/g, ''); // ひらがなカタカナ記号
+            let ignoreKanaText = v.replace(ignore1, '');
+            ignoreKanaText = ignoreKanaText.replace(ignore2, ''); // ひらがなカタカナ記号
+            const ignoreKanaTextArr = ignoreKanaText.replace(ignore3, ''); // 記号かっこなど
             const joyoKnjTextArr = this.knjList.map(e => e.knj).join('')
 
             const ignoreJoyoKnjDupArr = ignoreKanaTextArr.replace(new RegExp(`[${joyoKnjTextArr}]`, 'g'), '').split('');
@@ -371,6 +444,8 @@
             this.countOtherTotal = Array.from(ignoreJoyoKnjDupArr.join("")).length;
             this.countOtherUnique = ignoreJoyoKnUniquejArr.length;
             this.knjOtherUnique = ignoreJoyoKnUniquejArr.join("");
+
+            this.updateDitailsHtml();
           }
         }
       }
