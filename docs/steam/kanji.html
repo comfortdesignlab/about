@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!-- タブに表示されるタイトルを設定する -->
+  <title>修学済み漢字チェッカー</title>
+
+  <!-- 文字コードを指定する -->
+  <meta charset="UTF-8" />
+
+  <!-- サーバーに公開したときに検索結果に表示されないようにする -->
+  <meta name="robots" content="noindex" />
+
+  <!-- Vuetifyに必要なファイルを読み込む -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+
+  <!-- モバイル表示時に適切に表示されるように設定する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    /* チラツキ防止 */
+    [v-cloak] {
+      display: none;
+    }
+
+    .ditails-box {
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      margin-top: 4px;
+      margin-right: 2px;
+      margin-bottom: 4px;
+      margin-left: 2px;
+      padding: 4px;
+    }
+  </style>
+
+</head>
+
+<body style="background-color:#ECEFF1;">
+  <div id="app" v-cloak>
+    <v-app style="background-color:#ECEFF1;">
+      <v-app-bar dark app dense color="purple darken-4">
+        修学済み漢字チェッカー(2020年4月施行版)
+        <v-spacer></v-spacer>
+
+        <v-dialog width="500">
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn icon v-bind="attrs" v-on="on">
+              <v-icon>mdi-message-alert</v-icon>
+            </v-btn>
+          </template>
+          <v-card>
+            <v-card-title class="grey lighten-2">
+              フィードバック
+            </v-card-title>
+            <v-card-text class="mt-3">
+              機能改善、追加などは以下のメールにご連絡ください。<br>
+              ※要望すべてにお答えすることはできません。<br>
+              <br>
+              {{ tdu }}<br>
+              matsuikanae.lab[@]gmail.com
+            </v-card-text>
+          </v-card>
+        </v-dialog>
+      </v-app-bar>
+      <v-main>
+        <v-container fluid>
+          <v-row>
+            <v-col cols="12" md="8">
+              <v-card>
+                <v-card-text>
+                  <b>チェックしたいテキストを入力します</b>
+                  <v-textarea v-model="inputText" outlined dense hide-details height="400">
+                  </v-textarea>
+                </v-card-text>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn @click="isOpenDitailsDialog = true" dark color="purple darken-4">詳細(Altキーを素早く2回)</v-btn>
+                </v-card-actions>
+              </v-card>
+              <div class="pa-2">
+                <small>
+                  <b>出典</b> 2020年12月<br>
+                  小学校漢字 <a href="https://www.mext.go.jp/content/1413522_001.pdf" target="noopener noreferrer">文部科学省 小学校
+                    学習指導要領(平成29年告示) (PDF)</a><br>
+                  中学校漢字 <a
+                    href="https://www.bunka.go.jp/kokugo_nihongo/sisaku/joho/joho/kijun/naikaku/pdf/joyokanjihyo_20101130.pdf"
+                    target="noopener noreferrer">文化庁 常用漢字表 (PDF)</a><br>
+                  <b>参考</b> 2020年12月<br>
+                  小学校学年別漢字一覧 <a href="https://ja.wikipedia.org/wiki/学年別漢字配当表" target="noopener noreferrer">Wikipedia
+                    学年別漢字配当表</a><br>
+                  中学校学年別漢字一覧 <a href="http://kanji365.blog.fc2.com/blog-entry-2392.html"
+                    target="noopener noreferrer">常用漢字問題集 kanji365</a>
+                </small>
+                <!-- 漢字の重複がないかチェック -->
+                <!-- {{ knj.join('').split('').filter(((x, i, self)=>self.indexOf(x) === i && i !== self.lastIndexOf(x) )).join('') }} -->
+              </div>
+            </v-col>
+            <v-col cols="12" md="4">
+              <v-card>
+                <v-overlay absolute v-model="isChecking">
+                  <div class="text-center">
+                    <v-progress-circular indeterminate dark></v-progress-circular><br>
+                    <small>入力終了を待っています</small>
+                  </div>
+                </v-overlay>
+                <v-card-text>
+                  <b>結果</b>
+                  <div class="d-flex justify-space-between align-end mt-3">
+                    <div>文字数</div>
+                    <h2>{{ countAll }}</h2>
+                  </div>
+                  <v-divider></v-divider>
+                  <div class="d-flex justify-space-between align-end mt-3">
+                    <div @click="openKnjDialog(-1)" style="cursor:pointer;">
+                      漢字の数<small>(ノベ)</small><br><small>小中学校で習う常用漢字のみ</small>
+                    </div>
+                    <h2>{{ countKnjAll }}</h2>
+                  </div>
+                  <v-divider></v-divider>
+                  <div class="d-flex justify-space-between align-end mt-3">
+                    <div @click="openKnjDialog(-1)" style="cursor:pointer;">
+                      漢字の数<small>(ユニーク)</small><br><small>小中学校で習う常用漢字のみ</small>
+                    </div>
+                    <h2>{{ countKnjUnique }}</h2>
+                  </div>
+                  <v-divider></v-divider>
+
+                  <div v-for="(item,index) in knjList" :key="'knjlist'+index">
+                    <div class="d-flex justify-space-between align-end mt-3">
+                      <div @click="openKnjDialog(index)" style="cursor:pointer;">
+                        {{ item.title }}で習う漢字<small>(ノベ)</small></div>
+                      <h2>{{ item.countTotal }}</h2>
+                    </div>
+                    <v-divider></v-divider>
+                    <div class="ditails-box" v-if="item.countUnique !=0">
+                      <small>検出(ユニーク) {{ item.countUnique }}</small><br>
+                      {{ item.knj }}
+                    </div>
+                  </div>
+
+                  <div class="d-flex justify-space-between align-end mt-3">
+                    <div>
+                      その他<small>(ノベ)</small><br><small>常用漢字以外の文字</small>
+                    </div>
+                    <h2>{{ countOtherTotal }}</h2>
+                  </div>
+                  <v-divider></v-divider>
+                  <div class="ditails-box" v-if="countOtherUnique !=0">
+                    <small>検出(ユニーク) {{ countOtherUnique }}</small><br>
+                    {{ knjOtherUnique }}
+                  </div>
+
+                </v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
+
+
+
+          <v-dialog v-model="isOpenDitailsDialog">
+            <v-card>
+              <v-card-title>詳細</v-card-title>
+              <v-card-text>
+                <span class="red--text">調整中</span>
+                <pre>{{ checkText || '入力なし' }}</pre>
+              </v-card-text>
+              <v-divider></v-divider>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn text @click="isOpenDitailsDialog = false">閉じる</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+          <v-dialog v-model="isOpenKnjListDialog" width="600">
+            <v-card>
+              <v-card-title>{{ dialogKnjTitle }}</v-card-title>
+              <v-divider></v-divider>
+              <v-card-text class="mt-4">
+                {{ dialogKnjText }}
+                <div class="text-right">{{ dialogCountKnjText }} 字</div>
+              </v-card-text>
+              <v-divider></v-divider>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn text @click="isOpenKnjListDialog = false">閉じる</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+        </v-container>
+      </v-main>
+    </v-app>
+  </div>
+
+  <!-- Vue.js 2.6.12 を読み込む(バージョン固定、本番環境用) -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script> -->
+
+  <!-- Vue.js を読み込む(開発モード) -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+
+  <!-- Vuetifyに必要なファイルを読み込む -->
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.js"></script>
+
+  <!-- UUIDジェネレーター -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.1/uuid.min.js"></script>
+
+  <!-- Moment + Moment Timezone -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.32/moment-timezone-with-data.min.js"></script>
+
+  <!-- 漢字インポート -->
+  <script src="./kanji.js"></script>
+
+  <script>
+    const app = new Vue({
+      el: "#app",
+      vuetify: new Vuetify(),
+      data() {
+        return {
+          tdu: unescape('%u6771%u4EAC%u96FB%u6A5F%u5927%u5B66%20%u77E5%u7684%u60C5%u5831%u7A7A%u9593%u7814%u7A76%u5BA4'),
+          knj, // 別ファイルからインポート
+          inputText: "",
+          checkText: "",
+          isChecking: false,
+
+          knjList: [
+            {
+              title: "小学校1年生",
+              countTotal: 0,
+              countUnique: 0,
+              knj: "",
+            },
+            {
+              title: "小学校2年生",
+              countTotal: 0,
+              countUnique: 0,
+              knj: "",
+            },
+            {
+              title: "小学校3年生",
+              countTotal: 0,
+              countUnique: 0,
+              knj: "",
+            },
+            {
+              title: "小学校4年生",
+              countTotal: 0,
+              countUnique: 0,
+              knj: "",
+            },
+            {
+              title: "小学校5年生",
+              countTotal: 0,
+              countUnique: 0,
+              knj: "",
+            },
+            {
+              title: "小学校6年生",
+              countTotal: 0,
+              countUnique: 0,
+              knj: "",
+            },
+            {
+              title: "中学校1年生あたり",
+              countTotal: 0,
+              countUnique: 0,
+              knj: "",
+            },
+            {
+              title: "中学校2年生あたり",
+              countTotal: 0,
+              countUnique: 0,
+              knj: "",
+            },
+            {
+              title: "中学校3年生あたり",
+              countTotal: 0,
+              countUnique: 0,
+              knj: "",
+            },
+            {
+              title: "中学校(難)",
+              countTotal: 0,
+              countUnique: 0,
+              knj: "",
+            }
+          ],
+          
+          countOtherTotal: 0,
+          countOtherUnique: 0,
+          knjOtherUnique: "",
+
+          typeCallTimer: 0,
+          altTimer: 0,
+          isOpenDitailsDialog: false,
+          isOpenKnjListDialog: false,
+          dialogKnjTitle: "",
+          dialogKnjText: "",
+        }
+      },
+      mounted() {
+      },
+      methods: {
+        callAlt() {
+          let now = (new Date()).getTime();
+          if (this.altTimer == 0 || now - this.altTimer > 200) return this.altTimer = now;
+          this.isOpenDitailsDialog = !this.isOpenDitailsDialog;
+        },
+        openKnjDialog(index) {
+          if (index == -1) {
+            this.dialogKnjTitle = "常用漢字一覧"
+            this.dialogKnjText = this.knj.join("")
+            this.isOpenKnjListDialog = true;
+            return;
+          }
+          if (this.knj.length <= index) return;
+          if (this.knjList.length <= index) return;
+          this.dialogKnjTitle = this.knjList[index].title + " 漢字一覧"
+          this.dialogKnjText = this.knj[index]
+          this.isOpenKnjListDialog = true;
+        }
+      },
+      computed: {
+        countAll() {
+          return Array.from(this.checkText).length;
+        },
+        countKnjAll() {
+          return this.knjList.reduce((sum, e) => sum + e.countTotal, 0);
+        },
+        countKnjUnique() {
+          return this.knjList.reduce((sum, e) => sum + e.countUnique, 0);
+        },
+        dialogCountKnjText() {
+          return Array.from(this.dialogKnjText).length;
+        }
+      },
+      watch: {
+        inputText: {
+          immediate: true,
+          handler(v) {
+            this.isChecking = true;
+            clearTimeout(this.typeCallTimer);
+            this.typeCallTimer = setTimeout(() => {
+              this.isChecking = false;
+              this.checkText = this.inputText;
+            }, 300);
+          }
+        },
+        checkText: {
+          immediate: true,
+          handler(v) {
+            let textArr = v.split('');
+            for (let i = 0; i < this.knjList.length; i++) {
+              const knjArr = this.knj[i].split('');
+              const dupKnjArr = [...textArr, ...knjArr].filter(e => textArr.includes(e) && knjArr.includes(e));
+              const dupKnjArrUnique = [...new Set(dupKnjArr)];
+              dupKnjArr.splice(dupKnjArr.length - dupKnjArrUnique.length, dupKnjArrUnique.length);
+              this.knjList[i].countTotal = dupKnjArr.length;
+              this.knjList[i].countUnique = dupKnjArrUnique.length;
+              this.knjList[i].knj = dupKnjArrUnique.join('');
+            }
+
+            const ignoreKanaText = v.replace(/[A-Za-z0-9\n\s\tＡ-Ｚａ-ｚ０-９]/g, '');
+            const ignoreKanaTextArr = ignoreKanaText.replace(/[\u3040-\u309f\u30a0-\u30ff\u3005-\u3006]/g, ''); // ひらがなカタカナ記号
+            const joyoKnjTextArr = this.knjList.map(e => e.knj).join('')
+
+            const ignoreJoyoKnjDupArr = ignoreKanaTextArr.replace(new RegExp(`[${joyoKnjTextArr}]`, 'g'), '').split('');
+            const ignoreJoyoKnUniquejArr = Array.from([...new Set(ignoreJoyoKnjDupArr)].join(""));
+
+            this.countOtherTotal = Array.from(ignoreJoyoKnjDupArr.join("")).length;
+            this.countOtherUnique = ignoreJoyoKnUniquejArr.length;
+            this.knjOtherUnique = ignoreJoyoKnUniquejArr.join("");
+          }
+        }
+      }
+    })
+
+    document.addEventListener('keyup', function (e) {
+      if (e.keyCode == 18) app.callAlt()
+    });
+  </script>
+</body>
+
+</html>
