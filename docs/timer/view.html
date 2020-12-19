@@ -31,8 +31,8 @@
 <body style="background-color:#ECEFF1;">
   <div id="app" v-cloak>
     <v-app style="background-color:#ECEFF1;">
-      <v-app-bar dark app dense color="indigo">
-        OBS MESSAGE SENDER
+      <v-app-bar dark app dense color="red">
+        TIMER SENDER
         <v-spacer></v-spacer>
         <v-btn outlined v-if="user || user === false" :loading="user === false" v-on:click="firebase.auth().signOut()">
           SIGNOUT
@@ -61,18 +61,66 @@
             <v-col cols="12" md="4">
               <v-card class="mb-3">
                 <v-card-text>
-                  <h3>Hello, {{ user.displayName }}.</h3>
+                  <h3>{{ user.displayName }}</h3>
+
+                  <v-chip label small outlined class="my-1">TIME: {{ fixedTimeText }}</v-chip>
+                  <v-btn v-on:click="syncDatetime()" small dense icon>
+                    <v-icon>mdi-refresh</v-icon>
+                  </v-btn>
                   <v-chip label small outlined class="my-1">UID: {{ user.uid }}</v-chip>
-                  <v-btn v-on:click="forceRefreshToken()" small dark>トークン更新</v-btn>
+                  <v-btn v-on:click="forceRefreshToken()" small dense icon>
+                    <v-icon>mdi-refresh</v-icon>
+                  </v-btn>
+                </v-card-text>
+              </v-card>
+              <v-card class="mb-3">
+                <v-card-title>
+                  TIMER
+                </v-card-title>
+                <v-card-text>
+                  <h3>{{ displayElapsedText }}</h3>
                 </v-card-text>
               </v-card>
               <v-card class="mb-3">
                 <v-card-text>
                   <small>現在値</small><br>
-                  {{ nowMessage || "-" }}
+
+                  <v-btn icon @click="shareTimerPlay()">
+                    <v-icon>mdi-play</v-icon>
+                  </v-btn>
+                  <v-btn icon @click="shareTimerPause()">
+                    <v-icon>mdi-pause</v-icon>
+                  </v-btn>
+                  <v-btn icon @click="shareTimerStop()">
+                    <v-icon>mdi-stop</v-icon>
+                  </v-btn>
+                  <v-btn icon @click="shareTimerReset(14 * 60)">
+                    <v-icon>mdi-refresh</v-icon>
+                  </v-btn>
+                  <v-btn icon @click="setOnlyEndTime(14 * 60)">
+                    14
+                  </v-btn>
+                  <br>
+                  タイマー {{displayDurationText}}
+                  <br>
+                  経過 {{ displayElapsedText }}
+                  <br>
+                  5分経過まで残り {{toTimeText(60*5 - elapsed,false)}}
+                  <br>
+                  7分経過まで残り {{toTimeText(60*7 - elapsed,false)}}
+                  <br>
+                  14分経過まで残り {{toTimeText(60*14 - elapsed,false)}}
+                  <br>
+                  残り {{displayRemainingTimeText}}
+                  <br>
+                  <pre>{{ sTime }}</pre>
+                  ベル<br>
+                  <v-btn @click="playSound(1)" dark>1回</v-btn>
+                  <v-btn @click="playSound(2)" dark>2回</v-btn>
+                  <v-btn @click="playSound(3)" dark>3回</v-btn>
                 </v-card-text>
               </v-card>
-              <v-card>
+              <!-- <v-card>
                 <v-card-title>
                   送る
                 </v-card-title>
@@ -87,11 +135,11 @@
                     </v-btn>
                   </div>
                 </v-card-text>
-              </v-card>
+              </v-card> -->
             </v-col>
 
             <v-col cols="12" md="8">
-              <v-card class="mb-3">
+              <!-- <v-card class="mb-3">
                 <v-card-title>
                   プリセットに追加
                 </v-card-title>
@@ -106,9 +154,9 @@
                     </v-btn>
                   </div>
                 </v-card-text>
-              </v-card>
+              </v-card> -->
 
-              <v-card>
+              <!-- <v-card>
                 <v-card-title>
                   プリセット一覧
                 </v-card-title>
@@ -127,19 +175,34 @@
                     </v-btn>
                   </template>
                 </v-data-table>
-              </v-card>
+              </v-card> -->
             </v-col>
           </v-row>
+          <v-dialog v-model="osOpenInitialActionModal" persistent max-width="600">
+            <v-card>
+              <v-card-title>
+                <v-icon left>mdi-alert</v-icon> CAUTION
+              </v-card-title>
+              <v-card-text>
+                <div class="text-center my-4">
+                  <h2>ユーザーアクションが必要です</h2>
+                </div>
+                <p>サウンドを再生するには、ユーザーインタラクションが必要です。以下のボタンを押してください。</p>
+                <v-btn large block color="primary" @click="osOpenInitialActionModal = false">OK</v-btn>
+              </v-card-text>
+            </v-card>
+          </v-dialog>
         </v-container>
       </v-main>
     </v-app>
   </div>
 
+
   <!-- Vue.js 2.6.12 を読み込む(バージョン固定、本番環境用) -->
-  <!-- <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script> -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
 
   <!-- Vue.js を読み込む(開発モード) -->
-  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script> -->
 
   <!-- Vuetifyに必要なファイルを読み込む -->
   <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.js"></script>
@@ -167,9 +230,9 @@
       appId: "1:539970265531:web:9cab1715a6b90ee3f6a49e"
     });
     // firebase.firestore().useEmulator("localhost", 8080);
-    const COLLECTION_OBSLIST = "obs-list";
-    const COLLECTION_OBS = "obs";
-    const DOC_MESSAGE = "message";
+    // const COLLECTION_OBSLIST = "obs-list";
+    const COLLECTION_OBS = "timer";
+    const DOC_MESSAGE = "g1";
 
 
     const TIMEZONE = "Asia/Tokyo";
@@ -181,65 +244,109 @@
       data() {
         return {
           firebase,
+          moment,
+          osOpenInitialActionModal: false,
           email: "",
           password: "",
           user: false,
           firestoreUnsubscribe: null,
           isFirestoreProcessing: false,
 
-          nowMessage: "",
+          nowUnixTime: 0,
+          timeOffset: 0,
 
-          title: "",
-          contents: "",
+          isStarted: false,
 
-          isOpenEditDialog: false,
-          tempItem: null,
+          displayRemainingTime: -100,
+          sTime: {
+            isPause: false,
+            isProcessing: false,
+            duration: 0,
+            pauseDuration: 0,
+            start: 0,  // 時刻unix s
+            end: 0, // 時刻 unix s
+          },
 
-          todoHeaders: [
-            { text: "タイトル", value: "text" },
-            { text: "作成日時", value: "created" },
-            { text: "", value: "actions", sortable: false, align: "end" },
-          ],
-          todoList: [
-            // {
-            //   todoId: uuid.v4(),
-            //   isDone: false,
-            //   title: "ヨーグルトを買う",
-            //   contents: "もう冷蔵庫にない",
-            //   createdAt: 1606043006,
-            //   updatedAt: 1606043007,
-            // },
-          ]
+          alert5: 0,
+          alert7: 0,
+          alert14: 0,
+
+          audioCtx: null,
+          soundBuffer: null
         }
       },
       mounted() {
         firebase.auth().onAuthStateChanged(this.onAuthStateChanged);
-        // フロント側の時間
-        let frontSideTime = new Date()
-        console.log(frontSideTime) // デバイスの時刻
-
-        // // サーバー側の時間
-        // axios.head(window.location.href).then(res => {
-        //   console.log(new Date(res.headers.date)) // サーバー時刻
-        // })
-        this.time11()
-
-
+        this.syncDatetime()
+        this.drawTime()
+        this.fetchAutio()
       },
       methods: {
-        async time11() {
-          const response = await fetch(window.location.href, {
-            method: 'HEAD',
-            cache: 'no-cache',
-            headers: {
-              // 'Content-Type': 'application/json'
-              // 'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            // redirect: 'follow', // manual, *follow, error
-            // referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-            // body: JSON.stringify(data) // 本文のデータ型は "Content-Type" ヘッダーと一致する必要があります
+        async fetchAutio() {
+          const response = await fetch('./tin.wav', {
+            method: 'GET',
           })
-          console.log(response.headers.date)
+          let arr = await response.arrayBuffer()
+          this.audioCtx = new AudioContext()
+          this.soundBuffer = await this.audioCtx.decodeAudioData(arr)
+          //setTimeout(this.playSound,3000)
+        },
+        setAlert5714() {
+          clearTimeout(this.alert5)
+          clearTimeout(this.alert7)
+          clearTimeout(this.alert14)
+          let now = this.ntpMoment().valueOf() / 1000
+          let elapsed = this.sTime.duration - this.sTime.pauseDuration
+          console.log(elapsed)
+          if (this.sTime.end < now && this.sTime.pauseDuration > 0) return
+          if (this.sTime.pause) return
+          if (!this.sTime.isProcessing) return
+          let min5 = 5
+          let min7 = 7 * 60
+          let min14 = 14 * 60
+          if (elapsed < min5) this.alert5 = setTimeout(this.playSound, (min5 - elapsed) * 1000, 1)
+          if (elapsed < min7) this.alert7 = setTimeout(this.playSound, (min7 - elapsed) * 1000, 2)
+          if (elapsed < min14) this.alert14 = setTimeout(this.playSound, (min14 - elapsed) * 1000, 3)
+        },
+        playSound(count = 1) {
+          for (let i = 0; i < count; i++) {
+            setTimeout(this._playSound, i * 200)
+          }
+        },
+        _playSound() {
+          let audioCtx = new AudioContext();
+          let soundSource = audioCtx.createBufferSource()
+          soundSource.buffer = this.soundBuffer
+          soundSource.connect(audioCtx.destination)  //再生デバイス接続
+          soundSource.start(); //再生
+        },
+
+        drawTime() {
+          window.requestAnimationFrame(this.drawTime);
+          let now = Math.floor((new Date()).getTime() / 1000 + this.timeOffset)
+          if (this.nowUnixTime != now) this.nowUnixTime = now
+          this.drawSharedTimer()
+        },
+
+        async syncDatetime() {
+          let serverList = [
+            'https://ntp-a1.nict.go.jp/cgi-bin/json',
+            // 'http://ntp-a1.nict.go.jp/cgi-bin/json',
+            // 'https://ntp-b1.nict.go.jp/cgi-bin/json',
+            // 'http://ntp-b1.nict.go.jp/cgi-bin/json'
+          ];
+          let serverUrl = serverList[Math.floor(Math.random() * serverList.length)];
+          let localNow = (new Date()).getTime() / 1000;
+          const response = await fetch(`${serverUrl}?${localNow}`, {
+            method: 'GET',
+            cache: 'no-cache',
+          })
+          let timeObj = await response.json()
+          let localTime2 = new Date()
+          var fixedTime = timeObj.st + (localTime2.getTime() / 1000 - timeObj.it) / 2
+          let offset = fixedTime - localTime2.getTime() / 1000
+          this.timeOffset = offset
+          console.log("Time Synced", offset)
         },
 
         async signIn() {
@@ -253,8 +360,9 @@
           try {
             await firebase.auth().currentUser.getIdToken(true);
             let idTokenResult = await firebase.auth().currentUser.getIdTokenResult();
-            console.log("isUnapproved", idTokenResult.claims.custom.permissions.isUnapproved);
-            console.log("isMember", idTokenResult.claims.custom.permissions.isMember);
+            console.log("Token Updated");
+            console.log("  isUnapproved", idTokenResult.claims.custom.permissions.isUnapproved);
+            console.log("  isMember", idTokenResult.claims.custom.permissions.isMember);
           } catch (err) {
             console.error(err);
           }
@@ -262,11 +370,11 @@
         onAuthStateChanged(user) {
           if (user) {
             this.user = user.toJSON();
-            this.firestoreUnsubscribe = firebase.firestore()
-              .collection(COLLECTION_OBSLIST)
-              .orderBy("createdAt", "desc")
-              .limit(50)
-              .onSnapshot(this.onSnapshotTodoList);
+            // this.firestoreUnsubscribe = firebase.firestore()
+            //   .collection(COLLECTION_OBSLIST)
+            //   .orderBy("createdAt", "desc")
+            //   .limit(50)
+            //   .onSnapshot(this.onSnapshotTodoList);
             this.firestoreUnsubscribe = firebase.firestore()
               .collection(COLLECTION_OBS)
               .doc(DOC_MESSAGE)
@@ -283,6 +391,87 @@
         onSnapshotTodoList(querySnapshot) {
           this.$set(this, "todoList", querySnapshot.docs.map(v => Object.assign(v.data(), { todoId: v.id })));
         },
+
+        ntpMoment() {
+          return moment().add(this.timeOffset, 's')
+        },
+        async setOnlyEndTime(duration) {
+          await this.shareTimerRequest('SETONLYEND', { duration })
+        },
+        async shareTimerPlay() {
+          await this.shareTimerRequest('PLAY')
+        },
+        async shareTimerPause() {
+          await this.shareTimerRequest('PAUSE')
+        },
+        async shareTimerStop() {
+          await this.shareTimerRequest('STOP')
+        },
+        async shareTimerReset(duration) {
+          await this.shareTimerRequest('RESET', { duration, offsetElapsed: 0 })
+        },
+        async shareTimerRequest(status, { duration, offsetElapsed } = {}) {
+          switch (status) {
+            case 'PLAY':
+              if (!this.sTime.isProcessing) {
+                if (this.sTime.isPause) {
+                  // PAUSE
+                  this.sTime.start = (this.ntpMoment().valueOf() / 1000) + (this.sTime.duration - this.sTime.pauseDuration)
+                  this.sTime.end = (this.ntpMoment().valueOf() / 1000) + this.sTime.pauseDuration
+                } else {
+                  // STOP
+                  this.sTime.start = (this.ntpMoment().valueOf() / 1000)
+                  this.sTime.end = (this.ntpMoment().valueOf() / 1000) + this.sTime.duration
+                  this.sTime.pauseDuration = this.sTime.duration
+                }
+                this.sTime.isPause = false
+                this.sTime.isProcessing = true
+              }
+              break
+            case 'PAUSE':
+              if (!this.sTime.isPause) {
+                this.sTime.isPause = true
+                this.sTime.isProcessing = false
+                this.sTime.pauseDuration = this.sTime.end - (this.ntpMoment().valueOf() / 1000)
+              }
+              break
+            case 'STOP':
+              this.sTime.isPause = false
+              this.sTime.isProcessing = false
+              this.sTime.pauseDuration = 0
+              this.sTime.duration = 0
+              break
+            case 'RESET':
+              this.sTime.duration = duration
+              this.sTime.start = this.ntpMoment().valueOf() / 1000
+              this.sTime.end = (this.ntpMoment().valueOf() / 1000) + duration
+              this.sTime.pauseDuration = this.sTime.duration
+              break
+            case 'SETONLYEND':
+              console.log(this.sTime.start - (this.ntpMoment().valueOf() / 1000))
+              this.sTime.duration = duration
+              this.sTime.end = this.sTime.start + duration
+              this.sTime.pauseDuration = this.sTime.end - (this.ntpMoment().valueOf() / 1000)
+              break
+          }
+          this.setAlert5714()
+        },
+
+        drawSharedTimer() {
+          if (this.sTime.isPause) {
+            if (this.displayRemainingTime != this.sTime.pauseDuration) this.displayRemainingTime = this.displayRemainingTime
+            return
+          }
+          if (this.sTime.isProcessing) {
+            let t = this.sTime.end - (this.ntpMoment().valueOf() / 1000)
+            if (this.displayRemainingTime != t) this.displayRemainingTime = t
+            return
+          }
+          if (this.displayRemainingTime != 0) this.displayRemainingTime = 0
+        },
+
+
+
         async addItem() {
           try {
             let todoId = uuid.v4();
@@ -347,6 +536,43 @@
         },
         toStringFromUnixTime(unixTimeSec) {
           return moment.unix(unixTimeSec).tz(TIMEZONE).format(DATETIME_VIEW_FORMAT);
+        },
+
+        toTimeText(d, milli = true, s = true, m = true, h = true) {
+          if (d < 0) d = 0
+          let str = ''
+          if (h) str += `${Math.floor(d / 3600)}時間`
+          if (m) str += `${('00' + Math.floor((d % 3600) / 60)).slice(-2)}分`
+          if (s) str += `${('00' + Math.floor(d % 60)).slice(-2)}秒`
+          if (milli) str += `(${('000' + Math.round(d % 1 * 1000)).slice(-3)})`
+          return str
+          // return `${Math.floor(d / 3600)}時間 ${('00' + Math.floor((d % 3600) / 60)).slice(-2)}分 ${('00' + Math.floor(d % 60)).slice(-2)}秒 (${('000' + Math.round(d % 1 * 1000)).slice(-3)})`
+        }
+      },
+      watch: {
+        helloWorld: {
+          handler() {
+
+          },
+          immediate: true
+        }
+      },
+      computed: {
+        elapsed() {
+          return this.sTime.duration - this.displayRemainingTime
+        },
+        fixedTimeText() {
+          if (this.nowUnixTime) { /* NEED!! */ }
+          return moment().add(this.timeOffset, 's').tz(TIMEZONE).format(DATETIME_VIEW_FORMAT)
+        },
+        displayRemainingTimeText() {
+          return this.toTimeText(this.displayRemainingTime > 0 ? this.displayRemainingTime : 0)
+        },
+        displayDurationText() {
+          return this.toTimeText(this.sTime.duration, false)
+        },
+        displayElapsedText() {
+          return this.toTimeText(this.elapsed, false)
         }
       }
     })
