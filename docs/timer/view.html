@@ -301,7 +301,7 @@
           if (this.sTime.end < now && this.sTime.pauseDuration > 0) return
           if (this.sTime.pause) return
           if (!this.sTime.isProcessing) return
-          let min5 = 5
+          let min5 = 5 * 60
           let min7 = 7 * 60
           let min14 = 14 * 60
           if (elapsed < min5) this.alert5 = setTimeout(this.playSound, (min5 - elapsed) * 1000, 1)
